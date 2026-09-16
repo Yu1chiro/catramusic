@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>admin access — catra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config={theme:{extend:{colors:{sky:{light:'#EFF2EF',mid:'#E2E6E1',deep:'#CFD6CE'},grass:{DEFAULT:'#4C9A46',deep:'#3A7A38'},ink:'#24261F',fog:'#8A8F84'},fontFamily:{sans:['Jost','sans-serif'],serif:['Fraunces','serif']},letterSpacing:{widest2:'0.35em'}}}}
+  </script>
+</head>
+<body class="min-h-screen bg-sky-light text-ink font-sans antialiased">
+  <div class="fixed inset-0 bg-gradient-to-b from-sky-light via-sky-mid to-sky-deep"></div>
+  <div class="fixed -top-20 -left-20 w-96 h-96 rounded-full bg-white/60 blur-3xl"></div>
+  <div class="fixed -bottom-28 -right-20 w-[30rem] h-[30rem] rounded-full bg-grass/20 blur-3xl"></div>
+
+  <main class="relative min-h-screen grid lg:grid-cols-2">
+    <section class="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-ink/10">
+      <a href="/" class="flex items-center gap-3 w-fit">
+        <svg width="28" height="28" viewBox="0 0 40 40"><line x1="20" y1="2" x2="20" y2="38" stroke="#24261F" stroke-width=".8"/><line x1="2" y1="20" x2="38" y2="20" stroke="#24261F" stroke-width=".8"/><circle cx="24" cy="16" r="9" fill="none" stroke="#24261F" stroke-width=".8"/><path d="M24 12C22 14 22 17 24 19C26 17 26 14 24 12Z" fill="#24261F"/></svg>
+        <span class="text-sm tracking-widest2 lowercase">catra</span>
+      </a>
+      <div class="max-w-lg">
+        <p class="text-[11px] tracking-widest2 lowercase text-fog mb-6">content studio</p>
+        <h1 class="font-serif italic text-5xl xl:text-6xl leading-tight">keep the quiet things alive.</h1>
+        <p class="mt-7 text-sm leading-relaxed text-ink/60 max-w-md">A small place to tend releases, selected work, and moments captured.</p>
+      </div>
+      <p class="text-[10px] tracking-widest2 lowercase text-ink/40">nurture-inspired administration</p>
+    </section>
+
+    <section class="flex items-center justify-center p-5 sm:p-8">
+      <div class="w-full max-w-md bg-sky-light/75 backdrop-blur-xl border border-white/70 shadow-[0_24px_80px_rgba(36,38,31,.10)] p-6 sm:p-9">
+        <a href="/" class="lg:hidden flex items-center gap-3 mb-10 w-fit">
+          <i class="fa-solid fa-seedling text-grass"></i><span class="text-sm tracking-widest2 lowercase">catra</span>
+        </a>
+
+        <p id="eyebrow" class="text-[11px] tracking-widest2 lowercase text-fog mb-3">welcome back</p>
+        <h2 id="form-title" class="font-serif italic text-3xl mb-8">sign in to the studio</h2>
+
+        <div id="alert" class="hidden mb-5 border px-4 py-3 text-sm" role="alert"></div>
+
+        <form id="auth-form" class="space-y-5" novalidate>
+          <div>
+            <label for="username" class="block text-[11px] tracking-widest2 lowercase text-fog mb-2">username</label>
+            <input id="username" name="username" autocomplete="username" required maxlength="32" class="w-full bg-white/50 border border-ink/15 px-4 py-3 outline-none focus:border-grass transition-colors" placeholder="your_username">
+          </div>
+          <div id="email-field" class="hidden">
+            <label for="email" class="block text-[11px] tracking-widest2 lowercase text-fog mb-2">email</label>
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" class="w-full bg-white/50 border border-ink/15 px-4 py-3 outline-none focus:border-grass transition-colors" placeholder="hello@example.com">
+          </div>
+          <div>
+            <label for="password" class="block text-[11px] tracking-widest2 lowercase text-fog mb-2">password</label>
+            <div class="relative">
+              <input id="password" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="72" class="w-full bg-white/50 border border-ink/15 px-4 py-3 pr-12 outline-none focus:border-grass transition-colors" placeholder="••••••••">
+              <button id="toggle-password" type="button" aria-label="Show password" class="absolute inset-y-0 right-0 w-12 grid place-items-center text-ink/45 hover:text-ink">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button id="submit-btn" class="w-full bg-ink text-sky-light px-5 py-3.5 text-xs tracking-widest2 lowercase hover:bg-grass-deep transition-colors flex items-center justify-center gap-3">
+            <span>sign in</span><i class="fa-solid fa-arrow-right text-[11px]"></i>
+          </button>
+        </form>
+
+        <p class="mt-7 text-center text-sm text-ink/55">
+          <span id="switch-copy">new here?</span>
+          <button id="switch-mode" type="button" class="ml-1 border-b border-ink/30 hover:border-grass hover:text-grass transition-colors">register</button>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form=document.getElementById('auth-form');
+    const emailField=document.getElementById('email-field');
+    const email=document.getElementById('email');
+    const password=document.getElementById('password');
+    const switchMode=document.getElementById('switch-mode');
+    const alertBox=document.getElementById('alert');
+    let mode='login';
+
+    function showAlert(message,type='error'){
+      alertBox.textContent=message;
+      alertBox.className=`mb-5 border px-4 py-3 text-sm ${type==='success'?'border-grass/40 bg-grass/10 text-grass-deep':'border-red-400/40 bg-red-50 text-red-700'}`;
+    }
+
+    function setMode(next){
+      mode=next;
+      const registering=mode==='register';
+      emailField.classList.toggle('hidden',!registering);
+      email.required=registering;
+      password.autocomplete=registering?'new-password':'current-password';
+      document.getElementById('eyebrow').textContent=registering?'begin here':'welcome back';
+      document.getElementById('form-title').textContent=registering?'create an admin account':'sign in to the studio';
+      document.querySelector('#submit-btn span').textContent=registering?'register':'sign in';
+      document.getElementById('switch-copy').textContent=registering?'already registered?':'new here?';
+      switchMode.textContent=registering?'sign in':'register';
+      alertBox.classList.add('hidden');
+    }
+
+    switchMode.addEventListener('click',()=>setMode(mode==='login'?'register':'login'));
+    document.getElementById('toggle-password').addEventListener('click',(event)=>{
+      const reveal=password.type==='password';
+      password.type=reveal?'text':'password';
+      event.currentTarget.innerHTML=`<i class="fa-regular ${reveal?'fa-eye-slash':'fa-eye'}"></i>`;
+      event.currentTarget.setAttribute('aria-label',reveal?'Hide password':'Show password');
+    });
+
+    form.addEventListener('submit',async(event)=>{
+      event.preventDefault();
+      if(!form.reportValidity()) return;
+      const button=document.getElementById('submit-btn');
+      button.disabled=true;
+      button.classList.add('opacity-60');
+      alertBox.classList.add('hidden');
+      const payload={username:form.username.value.trim(),password:password.value};
+      if(mode==='register') payload.email=email.value.trim();
+      try{
+        const response=await fetch(`/api/auth/${mode}`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
+        const result=await response.json();
+        if(!response.ok) throw new Error(result.message||'Request failed.');
+        showAlert(result.message,'success');
+        setTimeout(()=>location.href='/admin',500);
+      }catch(error){showAlert(error.message);}
+      finally{button.disabled=false;button.classList.remove('opacity-60');}
+    });
+
+    fetch('/api/auth/me',{credentials:'same-origin'}).then(response=>{if(response.ok) location.href='/admin';}).catch(()=>{});
+  </script>
+</body>
+</html>

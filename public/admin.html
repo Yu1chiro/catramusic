@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>content studio — catra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config={theme:{extend:{colors:{sky:{light:'#EFF2EF',mid:'#E2E6E1',deep:'#CFD6CE'},grass:{DEFAULT:'#4C9A46',deep:'#3A7A38'},ink:'#24261F',fog:'#8A8F84'},fontFamily:{sans:['Jost','sans-serif'],serif:['Fraunces','serif']},letterSpacing:{widest2:'0.35em'}}}}
+  </script>
+  <style>
+    .nav-active{background:#24261F;color:#EFF2EF}.panel{display:none}.panel.active{display:block}
+    .ql-toolbar.ql-snow,.ql-container.ql-snow{border-color:rgba(36,38,31,.15)}
+    .ql-container.ql-snow{position:relative;min-height:150px;max-height:280px;overflow-y:auto;background:rgba(255,255,255,.5);font-family:Jost,sans-serif}
+    .ql-editor{min-height:150px}
+    .ql-editor.ql-blank::before{position:absolute;left:15px;right:15px;color:rgba(36,38,31,.4);font-style:normal;pointer-events:none}
+    .ql-tooltip{z-index:15;max-width:calc(100% - 1rem)}
+    ::selection{background:#4C9A46;color:#EFF2EF} body{background:#EFF2EF}
+  </style>
+</head>
+<body class="text-ink font-sans antialiased">
+  <div id="mobile-shade" class="fixed inset-0 z-30 hidden bg-ink/35 backdrop-blur-sm lg:hidden"></div>
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full lg:translate-x-0 bg-sky-deep border-r border-ink/10 transition-transform duration-300 flex flex-col">
+    <div class="h-20 px-6 flex items-center justify-between border-b border-ink/10">
+      <a href="/" class="flex items-center gap-3"><i class="fa-solid fa-seedling text-grass"></i><span class="text-sm tracking-widest2 lowercase">catra</span></a>
+      <button id="close-sidebar" class="lg:hidden w-9 h-9 border border-ink/15" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <nav class="p-4 space-y-2 flex-1">
+      <p class="px-3 py-3 text-[10px] tracking-widest2 lowercase text-fog">content panels</p>
+      <button data-panel="discography" class="panel-link nav-active w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors"><i class="fa-solid fa-compact-disc w-5"></i><span>Discography</span></button>
+      <button data-panel="works" class="panel-link w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-white/40 transition-colors"><i class="fa-solid fa-layer-group w-5"></i><span>Selected Works</span></button>
+      <button data-panel="gallery" class="panel-link w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-white/40 transition-colors"><i class="fa-regular fa-images w-5"></i><span>Gallery</span></button>
+    </nav>
+    <div class="p-4 border-t border-ink/10">
+      <a href="/" target="_blank" class="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/40"><i class="fa-solid fa-arrow-up-right-from-square w-5"></i>View website</a>
+      <button id="logout" class="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-700 hover:bg-red-50/70"><i class="fa-solid fa-arrow-right-from-bracket w-5"></i>Sign out</button>
+    </div>
+  </aside>
+
+  <div class="lg:pl-72 min-h-screen">
+    <header class="sticky top-0 z-20 h-20 bg-sky-light/85 backdrop-blur-xl border-b border-ink/10 px-4 sm:px-6 lg:px-10 flex items-center justify-between">
+      <div class="flex items-center gap-4 min-w-0">
+        <button id="open-sidebar" class="lg:hidden w-10 h-10 border border-ink/15 shrink-0" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+        <div class="min-w-0"><p class="text-[10px] tracking-widest2 lowercase text-fog">content studio</p><h1 id="page-title" class="font-serif italic text-xl sm:text-2xl truncate">discography</h1></div>
+      </div>
+      <div class="hidden sm:flex items-center gap-3 text-sm text-ink/60"><span class="w-2 h-2 bg-grass rounded-full"></span><span id="admin-name">admin</span></div>
+    </header>
+
+    <main class="p-4 sm:p-6 lg:p-10 max-w-[1500px] mx-auto">
+      <section id="panel-discography" class="panel active">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
+          <div><p class="text-[11px] tracking-widest2 lowercase text-fog mb-2">releases</p><h2 class="font-serif italic text-3xl">discography</h2></div>
+          <button data-create="discography" class="bg-ink text-sky-light px-5 py-3 text-xs tracking-widest2 lowercase hover:bg-grass-deep"><i class="fa-solid fa-plus mr-2"></i>new release</button>
+        </div>
+        <div class="bg-white/45 border border-ink/10 overflow-hidden"><div class="overflow-x-auto"><table class="w-full min-w-[900px] text-left"><thead class="bg-sky-deep/60 text-[10px] tracking-widest2 lowercase text-fog"><tr><th class="p-4">cover</th><th class="p-4">title</th><th class="p-4">type</th><th class="p-4">year</th><th class="p-4">links</th><th class="p-4 text-right">actions</th></tr></thead><tbody id="discography-table" class="divide-y divide-ink/10"></tbody></table></div></div>
+      </section>
+
+      <section id="panel-works" class="panel">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
+          <div><p class="text-[11px] tracking-widest2 lowercase text-fog mb-2">portfolio</p><h2 class="font-serif italic text-3xl">selected works</h2></div>
+          <button data-create="works" class="bg-ink text-sky-light px-5 py-3 text-xs tracking-widest2 lowercase hover:bg-grass-deep"><i class="fa-solid fa-plus mr-2"></i>new work</button>
+        </div>
+        <div class="bg-white/45 border border-ink/10 overflow-hidden"><div class="overflow-x-auto"><table class="w-full min-w-[900px] text-left"><thead class="bg-sky-deep/60 text-[10px] tracking-widest2 lowercase text-fog"><tr><th class="p-4">image</th><th class="p-4">title</th><th class="p-4">category</th><th class="p-4">year</th><th class="p-4">description</th><th class="p-4 text-right">actions</th></tr></thead><tbody id="works-table" class="divide-y divide-ink/10"></tbody></table></div></div>
+      </section>
+
+      <section id="panel-gallery" class="panel">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
+          <div><p class="text-[11px] tracking-widest2 lowercase text-fog mb-2">visual journal</p><h2 class="font-serif italic text-3xl">gallery</h2></div>
+          <button data-create="gallery" class="bg-ink text-sky-light px-5 py-3 text-xs tracking-widest2 lowercase hover:bg-grass-deep"><i class="fa-solid fa-plus mr-2"></i>new gallery</button>
+        </div>
+        <div class="bg-white/45 border border-ink/10 overflow-hidden"><div class="overflow-x-auto"><table class="w-full min-w-[760px] text-left"><thead class="bg-sky-deep/60 text-[10px] tracking-widest2 lowercase text-fog"><tr><th class="p-4">preview</th><th class="p-4">title</th><th class="p-4">year</th><th class="p-4">images</th><th class="p-4 text-right">actions</th></tr></thead><tbody id="gallery-table" class="divide-y divide-ink/10"></tbody></table></div></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast-stack" class="fixed top-5 right-4 z-[90] w-[calc(100%-2rem)] max-w-sm space-y-3" aria-live="polite"></div>
+
+  <div id="form-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-3 sm:p-6">
+    <div class="absolute inset-0 bg-ink/35 backdrop-blur-sm" data-close-form></div>
+    <div class="relative bg-sky-light w-full max-w-3xl max-h-[92vh] sm:max-h-[88vh] border border-white/70 shadow-2xl flex flex-col overflow-hidden">
+      <div class="shrink-0 bg-sky-light border-b border-ink/10 px-5 sm:px-7 py-5 flex items-center justify-between">
+        <div class="min-w-0"><p id="form-eyebrow" class="text-[10px] tracking-widest2 lowercase text-fog">create</p><h3 id="form-heading" class="font-serif italic text-2xl truncate">new item</h3></div>
+        <button type="button" data-close-form class="shrink-0 w-10 h-10 border border-ink/15 hover:bg-ink hover:text-sky-light" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="entity-form" class="flex flex-col flex-1 min-h-0" novalidate>
+        <div class="flex-1 min-h-0 overflow-y-auto px-5 sm:px-7 py-6">
+          <div data-form="discography" class="hidden grid sm:grid-cols-2 gap-5">
+            <label class="sm:col-span-2 text-sm">Title<input name="d_title" maxlength="120" class="field" required></label>
+            <label class="sm:col-span-2 text-sm">URL image<input name="d_image_url" type="url" maxlength="2048" class="field" required></label>
+            <label class="text-sm">Type<select name="d_type" class="field" required><option value="single">Single</option><option value="album">Album</option></select></label>
+            <label class="text-sm">Year<input name="d_year" type="number" min="1900" max="2100" class="field" required></label>
+            <label class="sm:col-span-2 text-sm">Link Spotify<input name="d_spotify_url" type="url" maxlength="2048" class="field" required></label>
+            <label class="sm:col-span-2 text-sm">Link SoundCloud<input name="d_soundcloud_url" type="url" maxlength="2048" class="field" required></label>
+          </div>
+          <div data-form="works" class="hidden grid sm:grid-cols-2 gap-5">
+            <label class="sm:col-span-2 text-sm">Title<input name="w_title" maxlength="120" class="field" required></label>
+            <label class="sm:col-span-2 text-sm">URL image <span class="text-fog">(optional)</span><input name="w_image_url" type="url" maxlength="2048" class="field"></label>
+            <label class="text-sm">Category<select name="w_category" class="field" required><option>video</option><option>music</option><option>photo</option><option>album</option></select></label>
+            <label class="text-sm">Year<input name="w_year" type="number" min="1900" max="2100" class="field" required></label>
+            <div class="sm:col-span-2 text-sm"><span class="block mb-2">Description <span class="text-fog">(optional)</span></span><div id="work-editor"></div></div>
+          </div>
+          <div data-form="gallery" class="hidden grid sm:grid-cols-2 gap-5">
+            <label class="sm:col-span-2 text-sm">Title<input name="g_title" maxlength="120" class="field" required></label>
+            <label class="text-sm">Year<input name="g_year" type="number" min="1900" max="2100" class="field" required></label>
+            <div class="sm:col-span-2"><div class="flex items-center justify-between mb-3"><span class="text-sm">WebP image URLs</span><button id="add-image" type="button" class="text-xs border border-ink/20 px-3 py-2 hover:bg-ink hover:text-sky-light"><i class="fa-solid fa-plus mr-1"></i>Add URL</button></div><div id="image-repeater" class="space-y-3"></div><p class="mt-2 text-xs text-fog">Only URLs ending in .webp are accepted.</p></div>
+          </div>
+        </div>
+        <div class="shrink-0 bg-sky-light border-t border-ink/10 px-5 sm:px-7 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3"><button type="button" data-close-form class="px-5 py-3 border border-ink/20 text-xs tracking-widest2 lowercase">cancel</button><button id="save-button" class="px-5 py-3 bg-ink text-sky-light text-xs tracking-widest2 lowercase hover:bg-grass-deep"><i class="fa-solid fa-check mr-2"></i>save</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="delete-modal" class="fixed inset-0 z-[80] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-ink/40 backdrop-blur-sm" data-close-delete></div>
+    <div class="relative w-full max-w-md bg-sky-light border border-white/70 shadow-2xl p-7">
+      <div class="w-11 h-11 grid place-items-center bg-red-50 text-red-700 mb-5"><i class="fa-regular fa-trash-can"></i></div>
+      <h3 class="font-serif italic text-2xl mb-2">delete this item?</h3><p class="text-sm text-ink/60 leading-relaxed">This action cannot be undone. The selected data will be permanently removed.</p>
+      <div class="mt-7 flex justify-end gap-3"><button data-close-delete class="px-4 py-2.5 border border-ink/20 text-sm">Cancel</button><button id="confirm-delete" class="px-4 py-2.5 bg-red-700 text-white text-sm hover:bg-red-800">Delete</button></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script>
+    document.querySelectorAll('.field').forEach(el=>el.className+=' mt-2 w-full bg-white/50 border border-ink/15 px-4 py-3 outline-none focus:border-grass transition-colors');
+    const state={discography:[],works:[],gallery:[]};
+    let activePanel='discography',activeEntity=null,editingId=null,pendingDelete=null;
+    const quill=new Quill('#work-editor',{theme:'snow',modules:{toolbar:[['bold','italic','underline'],[{header:[2,3,false]}],[{list:'ordered'},{list:'bullet'}],['blockquote','link'],['clean']]}});
+    const escapeHtml=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const stripHtml=value=>{const node=document.createElement('div');node.innerHTML=value||'';return node.textContent||''};
+    const emptyRow=(columns,text='No data yet.')=>`<tr><td colspan="${columns}" class="p-10 text-center text-sm text-fog">${text}</td></tr>`;
+    const actionButtons=(entity,id)=>`<div class="flex justify-end gap-2"><button data-edit="${entity}" data-id="${id}" class="w-9 h-9 border border-ink/15 hover:bg-ink hover:text-sky-light" aria-label="Edit"><i class="fa-regular fa-pen-to-square text-sm"></i></button><button data-delete="${entity}" data-id="${id}" class="w-9 h-9 border border-red-200 text-red-700 hover:bg-red-700 hover:text-white" aria-label="Delete"><i class="fa-regular fa-trash-can text-sm"></i></button></div>`;
+
+    function toast(message,type='success'){
+      const el=document.createElement('div');
+      el.className=`border px-4 py-3 shadow-lg backdrop-blur flex gap-3 items-start text-sm ${type==='success'?'bg-sky-light/95 border-grass/40 text-grass-deep':'bg-red-50/95 border-red-300 text-red-700'}`;
+      el.innerHTML=`<i class="fa-solid ${type==='success'?'fa-circle-check':'fa-circle-exclamation'} mt-0.5"></i><span class="flex-1">${escapeHtml(message)}</span><button aria-label="Close"><i class="fa-solid fa-xmark"></i></button>`;
+      el.querySelector('button').onclick=()=>el.remove();document.getElementById('toast-stack').append(el);setTimeout(()=>el.remove(),4500);
+    }
+
+    async function api(url,options={}){
+      const response=await fetch(url,{credentials:'same-origin',...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});
+      let result={};try{result=await response.json()}catch{}
+      if(response.status===401){location.href='/signin';throw new Error('Session expired.');}
+      if(!response.ok) throw new Error(result.message||'Request failed.');
+      return result;
+    }
+
+    function renderDiscography(){
+      document.getElementById('discography-table').innerHTML=state.discography.length?state.discography.map(item=>`<tr class="hover:bg-white/35"><td class="p-4"><img src="${escapeHtml(item.image_url)}" alt="" class="w-12 h-12 object-cover bg-sky-deep" onerror="this.style.visibility='hidden'"></td><td class="p-4 font-serif italic text-lg">${escapeHtml(item.title)}</td><td class="p-4"><span class="text-xs border border-ink/15 px-2 py-1">${escapeHtml(item.type)}</span></td><td class="p-4 text-sm">${item.year}</td><td class="p-4"><div class="flex gap-3"><a href="${escapeHtml(item.spotify_url)}" target="_blank" rel="noopener" class="hover:text-[#1DB954]" aria-label="Spotify"><i class="fa-brands fa-spotify"></i></a><a href="${escapeHtml(item.soundcloud_url)}" target="_blank" rel="noopener" class="hover:text-[#ff5500]" aria-label="SoundCloud"><i class="fa-brands fa-soundcloud"></i></a></div></td><td class="p-4">${actionButtons('discography',item.id)}</td></tr>`).join(''):emptyRow(6);
+    }
+    function renderWorks(){
+      document.getElementById('works-table').innerHTML=state.works.length?state.works.map(item=>`<tr class="hover:bg-white/35"><td class="p-4">${item.image_url?`<img src="${escapeHtml(item.image_url)}" alt="" class="w-12 h-12 object-cover bg-sky-deep" onerror="this.style.visibility='hidden'>`:'<div class="w-12 h-12 bg-sky-deep grid place-items-center text-fog"><i class="fa-regular fa-image"></i></div>'}</td><td class="p-4 font-serif italic text-lg">${escapeHtml(item.title)}</td><td class="p-4"><span class="text-xs border border-ink/15 px-2 py-1">${escapeHtml(item.category)}</span></td><td class="p-4 text-sm">${item.year}</td><td class="p-4 text-sm text-ink/60 max-w-xs truncate">${escapeHtml(stripHtml(item.description)||'—')}</td><td class="p-4">${actionButtons('works',item.id)}</td></tr>`).join(''):emptyRow(6);
+    }
+    function renderGallery(){
+      document.getElementById('gallery-table').innerHTML=state.gallery.length?state.gallery.map(item=>`<tr class="hover:bg-white/35"><td class="p-4"><div class="flex -space-x-3">${item.images.slice(0,3).map(image=>`<img src="${escapeHtml(image.image_url)}" alt="" class="w-11 h-11 object-cover border-2 border-sky-light" onerror="this.style.visibility='hidden'>`).join('')}</div></td><td class="p-4 font-serif italic text-lg">${escapeHtml(item.title)}</td><td class="p-4 text-sm">${item.year}</td><td class="p-4 text-sm">${item.images.length} image${item.images.length===1?'':'s'}</td><td class="p-4">${actionButtons('gallery',item.id)}</td></tr>`).join(''):emptyRow(5);
+    }
+
+    async function load(entity=activePanel){
+      const result=await api(`/api/admin/${entity}`);state[entity]=result.data;
+      ({discography:renderDiscography,works:renderWorks,gallery:renderGallery})[entity]();
+    }
+
+    function switchPanel(panel){
+      activePanel=panel;document.querySelectorAll('.panel').forEach(el=>el.classList.toggle('active',el.id===`panel-${panel}`));
+      document.querySelectorAll('.panel-link').forEach(el=>el.classList.toggle('nav-active',el.dataset.panel===panel));
+      document.getElementById('page-title').textContent=panel==='works'?'selected works':panel;
+      closeSidebar();load(panel).catch(error=>toast(error.message,'error'));
+    }
+
+    const sidebar=document.getElementById('sidebar'),shade=document.getElementById('mobile-shade');
+    function openSidebar(){sidebar.classList.remove('-translate-x-full');shade.classList.remove('hidden')}
+    function closeSidebar(){if(innerWidth<1024){sidebar.classList.add('-translate-x-full');shade.classList.add('hidden')}}
+    document.getElementById('open-sidebar').onclick=openSidebar;document.getElementById('close-sidebar').onclick=closeSidebar;shade.onclick=closeSidebar;
+    document.querySelectorAll('.panel-link').forEach(button=>button.onclick=()=>switchPanel(button.dataset.panel));
+
+    function addImageInput(value=''){
+      const row=document.createElement('div');row.className='flex gap-2';
+      row.innerHTML=`<input type="url" required maxlength="2048" placeholder="https://example.com/image.webp" class="flex-1 min-w-0 bg-white/50 border border-ink/15 px-4 py-3 outline-none focus:border-grass" value="${escapeHtml(value)}"><button type="button" class="remove-image w-11 shrink-0 border border-red-200 text-red-700 hover:bg-red-700 hover:text-white" aria-label="Remove URL"><i class="fa-solid fa-minus"></i></button>`;
+      row.querySelector('button').onclick=()=>{if(document.querySelectorAll('#image-repeater input').length>1)row.remove();else row.querySelector('input').value='';};
+      document.getElementById('image-repeater').append(row);
+    }
+    document.getElementById('add-image').onclick=()=>addImageInput();
+
+    function openForm(entity,item=null){
+      activeEntity=entity;editingId=item?.id||null;document.getElementById('entity-form').reset();quill.setContents([]);
+      document.querySelectorAll('[data-form]').forEach(el=>{
+  const isActive = el.dataset.form === entity;
+  el.classList.toggle('hidden', !isActive);
+  el.querySelectorAll('[required]').forEach(field => { field.disabled = !isActive; });
+});
+      document.getElementById('form-eyebrow').textContent=item?'update':'create';
+      document.getElementById('form-heading').textContent=`${item?'edit':'new'} ${entity==='works'?'selected work':entity}`;
+      if(entity==='discography'&&item){['title','image_url','type','year','spotify_url','soundcloud_url'].forEach(key=>document.querySelector(`[name="d_${key}"]`).value=item[key]??'');}
+      if(entity==='works'&&item){['title','image_url','category','year'].forEach(key=>document.querySelector(`[name="w_${key}"]`).value=item[key]??'');quill.clipboard.dangerouslyPasteHTML(item.description||'');}
+      if(entity==='gallery'){const repeater=document.getElementById('image-repeater');repeater.innerHTML='';if(item){document.querySelector('[name="g_title"]').value=item.title;document.querySelector('[name="g_year"]').value=item.year;item.images.forEach(image=>addImageInput(image.image_url));}else addImageInput();}
+      const modal=document.getElementById('form-modal');modal.classList.remove('hidden');modal.classList.add('flex');document.body.style.overflow='hidden';
+    }
+    function closeForm(){const modal=document.getElementById('form-modal');modal.classList.add('hidden');modal.classList.remove('flex');document.body.style.overflow='';}
+    document.querySelectorAll('[data-close-form]').forEach(el=>el.onclick=closeForm);
+    document.querySelectorAll('[data-create]').forEach(el=>el.onclick=()=>openForm(el.dataset.create));
+
+    document.addEventListener('click',event=>{
+      const edit=event.target.closest('[data-edit]');if(edit){const item=state[edit.dataset.edit].find(row=>String(row.id)===edit.dataset.id);if(item)openForm(edit.dataset.edit,item);}
+      const del=event.target.closest('[data-delete]');if(del){pendingDelete={entity:del.dataset.delete,id:del.dataset.id};const modal=document.getElementById('delete-modal');modal.classList.remove('hidden');modal.classList.add('flex');}
+    });
+
+    function buildPayload(){
+      const form=document.getElementById('entity-form');
+      if(activeEntity==='discography')return{title:form.d_title.value,image_url:form.d_image_url.value,type:form.d_type.value,year:form.d_year.value,spotify_url:form.d_spotify_url.value,soundcloud_url:form.d_soundcloud_url.value};
+      if(activeEntity==='works')return{title:form.w_title.value,image_url:form.w_image_url.value,category:form.w_category.value,year:form.w_year.value,description:quill.root.innerHTML==='<p><br></p>'?'':quill.root.innerHTML};
+      return{title:form.g_title.value,year:form.g_year.value,images:[...document.querySelectorAll('#image-repeater input')].map(input=>input.value.trim()).filter(Boolean)};
+    }
+
+    document.getElementById('entity-form').addEventListener('submit',async event=>{
+      event.preventDefault();if(!event.currentTarget.reportValidity())return;
+      const button=document.getElementById('save-button');button.disabled=true;button.classList.add('opacity-60');
+      try{const url=`/api/admin/${activeEntity}${editingId?`/${editingId}`:''}`;const result=await api(url,{method:editingId?'PUT':'POST',body:JSON.stringify(buildPayload())});closeForm();toast(result.message);await load(activeEntity);}
+      catch(error){toast(error.message,'error')}finally{button.disabled=false;button.classList.remove('opacity-60')}
+    });
+
+    function closeDelete(){const modal=document.getElementById('delete-modal');modal.classList.add('hidden');modal.classList.remove('flex');pendingDelete=null;}
+    document.querySelectorAll('[data-close-delete]').forEach(el=>el.onclick=closeDelete);
+    document.getElementById('confirm-delete').onclick=async()=>{if(!pendingDelete)return;const target={...pendingDelete};try{const result=await api(`/api/admin/${target.entity}/${target.id}`,{method:'DELETE'});closeDelete();toast(result.message);await load(target.entity);}catch(error){toast(error.message,'error')}};
+    document.getElementById('logout').onclick=async()=>{await fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'});location.href='/signin'};
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeForm();closeDelete();closeSidebar();}});
+
+    async function init(){
+      try{const me=await api('/api/auth/me');document.getElementById('admin-name').textContent=me.user.username;await Promise.all([load('discography'),load('works'),load('gallery')]);}
+      catch(error){if(!location.pathname.endsWith('/signin'))toast(error.message,'error')}
+    }
+    init();
+  </script>
+</body>
+</html>
