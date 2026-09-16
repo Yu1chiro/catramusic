@@ -1,18 +1,4 @@
 {
-  "name": "porter-nurture-fullstack",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Full-stack Porter Robinson Nurture-inspired portfolio CMS",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
-    "check": "node --check server.js",
-    "test": "node tests/integration.js"
-  },
-  "engines": {
-    "node": ">=20"
-  },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.2",
@@ -21,8 +7,25 @@
     "pg": "^8.16.3",
     "sanitize-html": "^2.17.0"
   },
-  "devDependencies": {
-    "pg-mem": "^3.0.5",
-    "supertest": "^7.1.4"
-  }
+  "name": "porter-nurture-fullstack-final",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yu1chiro/catramusic.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Yu1chiro/catramusic/issues"
+  },
+  "homepage": "https://github.com/Yu1chiro/catramusic#readme"
 }
