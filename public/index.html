@@ -1,1027 +1,941 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>catra</title>
-<meta name="description" content="Raidencatra — video editor, music producer, photographer." />
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400;1,9..144,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          sky: {
-            light: '#EFF2EF',
-            mid: '#E2E6E1',
-            deep: '#CFD6CE',
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>catra</title>
+  <meta name="description" content="Raidencatra   video editor, music producer, photographer." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400;1,9..144,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sky: {
+              light: '#EFF2EF',
+              mid: '#E2E6E1',
+              deep: '#CFD6CE',
+            },
+            grass: {
+              DEFAULT: '#4C9A46',
+              deep: '#3A7A38',
+              pale: '#8FB981',
+            },
+            ink: '#24261F',
+            fog: '#8A8F84',
           },
-          grass: {
-            DEFAULT: '#4C9A46',
-            deep: '#3A7A38',
-            pale: '#8FB981',
+          fontFamily: {
+            sans: ['Jost', 'sans-serif'],
+            serif: ['Fraunces', 'serif'],
           },
-          ink: '#24261F',
-          fog: '#8A8F84',
-        },
-        fontFamily: {
-          sans: ['Jost', 'sans-serif'],
-          serif: ['Fraunces', 'serif'],
-        },
-        letterSpacing: {
-          widest2: '0.35em',
+          letterSpacing: {
+            widest2: '0.35em',
+          },
         },
       },
-    },
-  }
-</script>
-
-<style>
-  html { scroll-behavior: smooth; }
-  body { background: #EFF2EF; }
-
-  ::selection { background: #4C9A46; color: #EFF2EF; }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 1.1s ease, transform 1.1s ease;
-  }
-  .reveal.in { opacity: 1; transform: translateY(0); }
-
-  .cloud {
-    position: absolute;
-    border-radius: 999px;
-    filter: blur(40px);
-    background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0));
-    pointer-events: none;
-  }
-
-  .track-row {
-    border-top: 1px solid rgba(36,38,31,0.12);
-  }
-  .track-row:last-child { border-bottom: 1px solid rgba(36,38,31,0.12); }
-
-  .work-card {
-    background: #F5F7F4;
-    border: 1px solid rgba(36,38,31,0.10);
-  }
-
-  .nav-link { position: relative; }
-  .nav-link::after {
-    content: '';
-    position: absolute;
-    left: 0; right: 0; bottom: -4px;
-    height: 1px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .4s ease;
-  }
-  .nav-link:hover::after { transform: scaleX(1); }
-
-  .figure-run { animation: run-bob 2.4s ease-in-out infinite; transform-origin: bottom center; }
-  @keyframes run-bob {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-6px) rotate(-2deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .reveal { transition: none; opacity: 1; transform: none; }
-    .figure-run { animation: none; }
-  }
-
-  .grain {
-    position: absolute; inset: 0;
-    opacity: 0.035;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  /* Ditulis manual (bukan campuran utility Tailwind) supaya top/height tidak
-     saling override akibat konflik cascade `inset-0` vs `top`/`height` arbitrary. */
-  .hero-bg-wrap {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-  }
-  .hero-bg-img {
-    position: absolute;
-    top: -10%;
-    left: 0;
-    width: 100%;
-    height: 120%;
-    object-fit: cover;
-    object-position: center 40%;
-    opacity: 0;
-    transition: opacity .7s ease;
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-  @media (min-width: 768px) {
-    .hero-bg-img { object-position: center 35%; }
-  }
-
- /* === DISCOGRAPHY: marquee + overlay (baru, tidak menyentuh style lain) === */
-  .discography-marquee {
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
-    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
-  }
-  .discography-track {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-    width: max-content;
-    will-change: transform;
-    /* CSS Animation telah dihapus, akan dipaksa aktif melalui JAVASCRIPT */
-  }
-
-  .discography-item { cursor: pointer; }
-  .discography-item .discography-frame {
-    position: relative;
-    overflow: hidden;
-    background: #E2E6E1;
-  }
-  .discography-item img {
-    transition: transform .6s ease;
-  }
-  .discography-item:hover img { transform: scale(1.05); }
-  .discography-item .discography-hover {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(36,38,31,0.25);
-    opacity: 0;
-    transition: opacity .35s ease;
-  }
-  .discography-item:hover .discography-hover { opacity: 1; }
-
-  #discography-modal {
-    background: rgba(36,38,31,0.28);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  #discography-modal-panel {
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-    transition: opacity .35s ease, transform .35s ease;
-  }
-  #discography-modal.is-open #discography-modal-panel {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .discography-track { animation: none; }
-  }
-</style>
-<style>
-  /* === GALLERY LIGHTBOX MODAL === */
-  #gallery-lightbox {
-    background: rgba(36,38,31,0.85); /* Ink dengan opacity tinggi */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease;
-  }
-  #gallery-lightbox.is-open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  
-  #lightbox-content-wrap {
-    transform: scale(0.95) translateY(10px);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  #gallery-lightbox.is-open #lightbox-content-wrap {
-    transform: scale(1) translateY(0);
-  }
-
-  #work-modal {
-    background: rgba(239,242,239,0.82);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-  }
-  #work-modal-panel {
-    opacity: 0;
-    transform: translateY(18px) scale(.98);
-    transition: opacity .4s ease, transform .4s ease;
-  }
-  #work-modal.is-open #work-modal-panel {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  .work-description p + p { margin-top: .85rem; }
-  .work-description ul, .work-description ol { margin: .85rem 0; padding-left: 1.25rem; }
-  .work-description ul { list-style: disc; }
-  .work-description ol { list-style: decimal; }
-  .work-description h2, .work-description h3 { font-family: Fraunces, serif; font-style: italic; margin: 1rem 0 .4rem; }
-
-  /* Masonry helper classes */
-  .masonry-col {
-    column-count: 1;
-    column-gap: 1.25rem; /* gap-5 */
-  }
-  @media (min-width: 640px) { .masonry-col { column-count: 2; } }
-  @media (min-width: 1024px) { .masonry-col { column-count: 3; } }
-  
-  .masonry-item {
-    break-inside: avoid;
-    margin-bottom: 1.25rem;
-  }
-
-  /* Skeleton loading */
-  .skeleton {
-    position: relative;
-    overflow: hidden;
-    background: #E2E6E1;
-  }
-  .skeleton::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%);
-    animation: skeleton-shimmer 1.5s ease-in-out infinite;
-  }
-  @keyframes skeleton-shimmer {
-    100% { transform: translateX(100%); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton::after { animation: none; }
-  }
-  .skeleton-line { height: .75rem; border-radius: 2px; }
-</style>
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: #EFF2EF; }
+    ::selection { background: #4C9A46; color: #EFF2EF; }
+    
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 1.1s ease, transform 1.1s ease;
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    
+    .cloud {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(40px);
+      background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+    
+    .track-row { border-top: 1px solid rgba(36,38,31,0.12); }
+    .track-row:last-child { border-bottom: 1px solid rgba(36,38,31,0.12); }
+    .work-card { background: #F5F7F4; border: 1px solid rgba(36,38,31,0.10); }
+    
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -4px;
+      height: 1px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .4s ease;
+    }
+    .nav-link:hover::after { transform: scaleX(1); }
+    
+    .figure-run { animation: run-bob 2.4s ease-in-out infinite; transform-origin: bottom center; }
+    @keyframes run-bob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(-2deg); }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { transition: none; opacity: 1; transform: none; }
+      .figure-run { animation: none; }
+    }
+    
+    .grain {
+      position: absolute; inset: 0;
+      opacity: 0.035;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    
+    .hero-bg-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .hero-bg-img {
+      position: absolute;
+      top: -10%;
+      left: 0;
+      width: 100%;
+      height: 120%;
+      object-fit: cover;
+      object-position: center 40%;
+      opacity: 0;
+      transition: opacity .7s ease;
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+    @media (min-width: 768px) {
+      .hero-bg-img { object-position: center 35%; }
+    }
+    
+    .discography-marquee {
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    }
+    .discography-track {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      width: max-content;
+      will-change: transform;
+    }
+    .discography-item { cursor: pointer; }
+    .discography-item .discography-frame {
+      position: relative;
+      overflow: hidden;
+      background: #E2E6E1;
+    }
+    .discography-item img {
+      transition: transform .6s ease;
+    }
+    .discography-item:hover img { transform: scale(1.05); }
+    .discography-item .discography-hover {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(36,38,31,0.25);
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+    .discography-item:hover .discography-hover { opacity: 1; }
+    
+    #discography-modal {
+      background: rgba(36,38,31,0.28);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    #discography-modal-panel {
+      opacity: 0;
+      transform: scale(0.96) translateY(8px);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    #discography-modal.is-open #discography-modal-panel {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .discography-track { animation: none; }
+    }
+  </style>
+  <style>
+    /* === GALLERY LIGHTBOX MODAL === */
+    #gallery-lightbox {
+      background: rgba(36,38,31,0.85); 
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #gallery-lightbox.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #lightbox-content-wrap {
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #gallery-lightbox.is-open #lightbox-content-wrap {
+      transform: scale(1) translateY(0);
+    }
+    
+    #work-modal {
+      background: rgba(239,242,239,0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    #work-modal-panel {
+      opacity: 0;
+      transform: translateY(18px) scale(.98);
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    #work-modal.is-open #work-modal-panel {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .work-description p + p { margin-top: .85rem; }
+    .work-description ul, .work-description ol { margin: .85rem 0; padding-left: 1.25rem; }
+    .work-description ul { list-style: disc; }
+    .work-description ol { list-style: decimal; }
+    .work-description h2, .work-description h3 { font-family: Fraunces, serif; font-style: italic; margin: 1rem 0 .4rem; }
+    
+    .masonry-col {
+      column-count: 1;
+      column-gap: 1.25rem;
+    }
+    @media (min-width: 640px) { .masonry-col { column-count: 2; } }
+    @media (min-width: 1024px) { .masonry-col { column-count: 3; } }
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: 1.25rem;
+    }
+    
+    .skeleton {
+      position: relative;
+      overflow: hidden;
+      background: #E2E6E1;
+    }
+    .skeleton::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%);
+      animation: skeleton-shimmer 1.5s ease-in-out infinite;
+    }
+    @keyframes skeleton-shimmer {
+      100% { transform: translateX(100%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton::after { animation: none; }
+    }
+    .skeleton-line { height: .75rem; border-radius: 2px; }
+  </style>
 </head>
-
 <body class="text-ink font-sans antialiased">
-
-<!-- NAV -->
-<header id="site-nav" class="fixed top-0 inset-x-0 z-[60] transition-colors duration-500">
-  <div class="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between py-5">
-    <!-- Logo -->
-    <a href="#top" class="flex items-center gap-3 group relative z-[70]">
-      <svg width="26" height="26" viewBox="0 0 40 40" class="shrink-0">
-        <line x1="20" y1="2" x2="20" y2="38" stroke="#24261F" stroke-width="0.8"/>
-        <line x1="2" y1="20" x2="38" y2="20" stroke="#24261F" stroke-width="0.8"/>
-        <circle cx="24" cy="16" r="9" fill="none" stroke="#24261F" stroke-width="0.8"/>
-        <path d="M24 12 C22 14 22 17 24 19 C26 17 26 14 24 12 Z" fill="#24261F"/>
-      </svg>
-      <span class="text-sm tracking-widest2 lowercase">catra</span>
-    </a>
-    
-    <!-- Tombol Menu -->
-    <button id="menu-btn" class="relative z-[70] text-xs tracking-widest2 lowercase border border-ink/30 px-3 py-1.5 bg-sky-light/80 backdrop-blur hover:bg-ink hover:text-sky-light transition-colors">
-      menu
-    </button>
-  </div>
-</header>
-
-<!-- FULLSCREEN OVERLAY MENU (BLUR & CENTERED) -->
-<div id="fullscreen-menu" class="fixed inset-0 z-[50] invisible opacity-0 transition-all duration-500 bg-sky-light/80 backdrop-blur-xl flex items-center justify-center">
   
-  <!-- Kontainer Tengah untuk proporsi sedang -->
-  <div class="w-full max-w-4xl mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-center md:justify-center gap-12 md:gap-24">
-    
-    <!-- Kiri: Foto Image Portrait Ukuran Sedang (Hanya tampil di Desktop) -->
-    <div class="hidden md:block w-64 md:w-80 aspect-[3/4] relative shrink-0">
-      <img src="https://ik.imagekit.io/souhinasstes/ab67616d0000b2737d6ac8b4a84ad4b342050d87%20(1).webp" alt="Menu Portrait" class="w-full h-full object-cover shadow-sm border border-ink/10" />
+  <!-- NAV -->
+  <header id="site-nav" class="fixed top-0 inset-x-0 z-[60] transition-colors duration-500">
+    <div class="max-w-6xl mx-auto px-6 md:px-10 flex items-center justify-between py-5">
+      <a href="#top" class="flex items-center gap-3 group relative z-[70]">
+        <svg width="26" height="26" viewBox="0 0 40 40" class="shrink-0">
+          <line x1="20" y1="2" x2="20" y2="38" stroke="#24261F" stroke-width="0.8"/>
+          <line x1="2" y1="20" x2="38" y2="20" stroke="#24261F" stroke-width="0.8"/>
+          <circle cx="24" cy="16" r="9" fill="none" stroke="#24261F" stroke-width="0.8"/>
+          <path d="M24 12 C22 14 22 17 24 19 C26 17 26 14 24 12 Z" fill="#24261F"/>
+        </svg>
+        <span class="text-sm tracking-widest2 lowercase">catra</span>
+      </a>
+      <button id="menu-btn" class="relative z-[70] text-xs tracking-widest2 lowercase border border-ink/30 px-3 py-1.5 bg-sky-light/80 backdrop-blur hover:bg-ink hover:text-sky-light transition-colors">
+        menu
+      </button>
     </div>
-    
-    <!-- Kanan (Desktop) / Full (Mobile): Daftar Menu Basic -->
-    <div class="flex flex-col items-center md:items-start text-center md:text-left gap-6 md:gap-8 font-serif italic text-4xl md:text-5xl text-ink">
-      <a href="#about" class="overlay-link hover:text-grass transition-colors w-fit">about</a>
-      <a href="#services" class="overlay-link hover:text-grass transition-colors w-fit">services</a>
-      <a href="#work" class="overlay-link hover:text-grass transition-colors w-fit">work</a>
-      <a href="#contact" class="overlay-link hover:text-grass transition-colors w-fit">contact</a>
-      
-      <!-- Bagian Kontak -->
-      <div class="mt-8 md:mt-12 text-[11px] tracking-widest2 lowercase text-fog border-t border-ink/10 pt-6 font-sans not-italic">
-        say hello <br>
-        <a href="mailto:hello@raidencatra.com" class="text-ink hover:text-grass inline-block mt-2 transition-colors">hello@raidencatra.com</a>
+  </header>
+
+  <!-- FULLSCREEN OVERLAY MENU (BLUR & CENTERED) -->
+  <div id="fullscreen-menu" class="fixed inset-0 z-[50] invisible opacity-0 transition-all duration-500 bg-sky-light/80 backdrop-blur-xl flex items-center justify-center">
+    <div class="w-full max-w-4xl mx-auto px-6 md:px-10 flex flex-col md:flex-row items-center justify-center md:justify-center gap-12 md:gap-24">
+      <div class="hidden md:block w-64 md:w-80 aspect-[3/4] relative shrink-0">
+        <img src="https://ik.imagekit.io/souhinasstes/ab67616d0000b2737d6ac8b4a84ad4b342050d87%20(1).webp" alt="Menu Portrait" class="w-full h-full object-cover shadow-sm border border-ink/10" />
+      </div>
+      <div class="flex flex-col items-center md:items-start text-center md:text-left gap-6 md:gap-8 font-serif italic text-4xl md:text-5xl text-ink">
+        <a href="#about" class="overlay-link hover:text-grass transition-colors w-fit">about</a>
+        <a href="#services" class="overlay-link hover:text-grass transition-colors w-fit">services</a>
+        <a href="#work" class="overlay-link hover:text-grass transition-colors w-fit">work</a>
+        <a href="#contact" class="overlay-link hover:text-grass transition-colors w-fit">contact</a>
+        <div class="mt-8 md:mt-12 text-[11px] tracking-widest2 lowercase text-fog border-t border-ink/10 pt-6 font-sans not-italic">
+          say hello <br>
+          <a href="mailto:hello@raidencatra.com" class="text-ink hover:text-grass inline-block mt-2 transition-colors">hello@raidencatra.com</a>
+        </div>
       </div>
     </div>
-
-  </div>
-</div>
-<!-- HERO -->
-<!--
-  GANTI GAMBAR DI SINI:
-  Cari elemen <img id="hero-image" ...> di bawah, lalu ganti nilai `src=""`
-  dengan URL foto kamu. Kalau `src` dikosongkan/gagal load, hero otomatis
-  jatuh ke gradient sky→grass sebagai fallback (lihat #hero-fallback).
--->
-<section id="top" class="relative h-[100svh] min-h-[640px] overflow-hidden flex flex-col">
-
-  <!-- fallback gradient (tampil di belakang, atau jadi background utama kalau gambar kosong/gagal) -->
-  <div id="hero-fallback" class="absolute inset-0 bg-gradient-to-b from-sky-light via-sky-mid to-sky-deep"></div>
-
-  <!-- background image + parallax -->
-  <div class="hero-bg-wrap">
-    <img
-      id="hero-image"
-      src="https://ik.imagekit.io/souhinasstes/pexels-travelers_tw-1445512897-27370199_2.webp"
-      alt=""
-      class="hero-bg-img"
-      onload="this.style.opacity=1; document.getElementById('hero-fallback').style.opacity=0;"
-      onerror="this.style.display='none';"
-    />
   </div>
 
-  <!-- scrim: menyatukan warna foto dengan palet situs & jaga kontras teks -->
-  <div class="absolute inset-0 bg-gradient-to-b from-sky-light/70 via-sky-light/25 to-grass-deep/40"></div>
-
-  <div class="cloud w-72 h-40 top-24 left-10 opacity-50"></div>
-  <div class="cloud w-96 h-48 top-40 right-0 opacity-30"></div>
-  <div class="grain"></div>
-
-  <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center gap-8">
-      <img style="height: 150px; width: auto;" src="https://ik.imagekit.io/souhinasstes/ChatGPT%20Image%2016%20Sep%202026,%2000.06.05.png" class="rounded-lg" alt="">
-    <p class="reveal font-serif italic text-lg md:text-2xl text-ink/80 max-w-md drop-shadow-sm">
-      making small, tender things — one frame, one frequency at a time.
+  <!-- HERO -->
+  <section id="top" class="relative h-[100svh] min-h-[640px] overflow-hidden flex flex-col">
+    <div id="hero-fallback" class="absolute inset-0 bg-gradient-to-b from-sky-light via-sky-mid to-sky-deep"></div>
+    <div class="hero-bg-wrap">
+      <img
+        id="hero-image"
+        src="https://ik.imagekit.io/souhinasstes/pexels-travelers_tw-1445512897-27370199_2.webp"
+        alt=""
+        class="hero-bg-img"
+        onload="this.style.opacity=1; document.getElementById('hero-fallback').style.opacity=0;"
+        onerror="this.style.display='none';"
+      />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-sky-light/70 via-sky-light/25 to-grass-deep/40"></div>
+    <div class="cloud w-72 h-40 top-24 left-10 opacity-50"></div>
+    <div class="cloud w-96 h-48 top-40 right-0 opacity-30"></div>
+    <div class="grain"></div>
+    <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center gap-8">
+        <img style="height: 150px; width: auto;" src="https://ik.imagekit.io/souhinasstes/ChatGPT%20Image%2016%20Sep%202026,%2000.06.05.png" class="rounded-lg" alt="">
+      <p class="reveal font-serif italic text-lg md:text-2xl text-ink/80 max-w-md drop-shadow-sm">
+        making small, tender things   one frame, one frequency at a time.
+      </p>
+      <a href="#work" class="reveal mt-4 text-xs tracking-widest2 lowercase border-b border-ink/40 pb-1 hover:border-ink transition-colors">
+        see the work
+      </a>
+    </div>
+    <p class="reveal absolute bottom-3 right-4 z-10 text-[10px] tracking-wide text-ink/40">
+      hero art: tribute to porter robinson   <span class="italic font-serif normal-case">nurture</span>
     </p>
-    <a href="#work" class="reveal mt-4 text-xs tracking-widest2 lowercase border-b border-ink/40 pb-1 hover:border-ink transition-colors">
-      see the work
-    </a>
-  </div>
+  </section>
 
- 
-  <p class="reveal absolute bottom-3 right-4 z-10 text-[10px] tracking-wide text-ink/40">
-    hero art: tribute to porter robinson — <span class="italic font-serif normal-case">nurture</span>
-  </p>
-</section>
+  <!-- ABOUT -->
+  <section id="about" class="relative bg-sky-light py-28 md:py-36 px-6">
+    <div class="max-w-2xl mx-auto text-center">
+      <p class="reveal text-[11px] tracking-widest2 lowercase text-fog mb-6">about</p>
+      
+      <!-- Container Dinamis yang akan disuntik dari Database -->
+      <div id="about-content" class="reveal text-left md:text-center max-w-xl mx-auto space-y-6">
+         <div class="skeleton skeleton-line w-full"></div>
+         <div class="skeleton skeleton-line w-3/4 mx-auto"></div>
+      </div>
 
-<!-- ABOUT -->
-<section id="about" class="relative bg-sky-light py-28 md:py-36 px-6">
-  <div class="max-w-2xl mx-auto text-center">
-    <p class="reveal text-[11px] tracking-widest2 lowercase text-fog mb-6">about</p>
-    <p class="reveal font-serif text-2xl md:text-3xl leading-relaxed text-ink/90">
-      I'm a self-taught editor and producer from Indonesia, chasing the same
-      feeling in every project: something quiet turning into something alive.
-    </p>
-    <p class="reveal mt-8 text-sm md:text-base leading-relaxed text-ink/70 max-w-xl mx-auto">
-      Porter Robinson's <span class="italic font-serif">nurture</span> is the record that shaped how I think about
-      craft — soft colors holding sharp precision, restraint that still feels warm.
-      That balance is what I try to bring into every cut, every mix, every frame.
-    </p>
-  </div>
-</section>
-<section id="discography" class="relative bg-sky-deep py-28 md:py-36 overflow-hidden">
-  <div class="max-w-5xl mx-auto px-6">
-    <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-4">discography</p>
-    <h2 class="reveal font-serif italic text-2xl md:text-3xl text-center mb-14">releases, so far</h2>
-  </div>
+    </div>
+  </section>
 
-  <div class="reveal discography-marquee">
-    <div id="discography-track" class="discography-track px-6">
-      <div id="discography-skeleton" style="display:contents">
-      <div class="discography-item" aria-hidden="true">
-        <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
-        <div class="skeleton skeleton-line w-24 mt-3"></div>
+  <!-- DISCOGRAPHY -->
+  <section id="discography" class="relative bg-sky-deep py-28 md:py-36 overflow-hidden">
+    <div class="max-w-5xl mx-auto px-6">
+      <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-4">discography</p>
+      <h2 class="reveal font-serif italic text-2xl md:text-3xl text-center mb-14">releases, so far</h2>
+    </div>
+    <div class="reveal discography-marquee">
+      <div id="discography-track" class="discography-track px-6">
+        <div id="discography-skeleton" style="display:contents">
+          <div class="discography-item" aria-hidden="true">
+            <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
+            <div class="skeleton skeleton-line w-24 mt-3"></div>
+          </div>
+          <div class="discography-item" aria-hidden="true">
+            <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
+            <div class="skeleton skeleton-line w-24 mt-3"></div>
+          </div>
+          <div class="discography-item" aria-hidden="true">
+            <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
+            <div class="skeleton skeleton-line w-24 mt-3"></div>
+          </div>
+        </div>
       </div>
-      <div class="discography-item" aria-hidden="true">
-        <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
-        <div class="skeleton skeleton-line w-24 mt-3"></div>
+    </div>
+    <p class="reveal text-center text-xs text-ink/40 mt-10 px-6">klik gambar untuk lihat detail rilisan &amp; tautan streaming.</p>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="relative bg-sky-mid py-28 md:py-36 px-6">
+    <div class="max-w-2xl mx-auto">
+      <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-14">services</p>
+      <div class="reveal flex flex-col">
+        <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
+          <span class="tracking-widest2 lowercase text-sm md:text-base">video editing</span>
+          <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">narrative cuts, color, pacing</span>
+        </div>
+        <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
+          <span class="tracking-widest2 lowercase text-sm md:text-base">music production</span>
+          <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">composition, mixing, sound design</span>
+        </div>
+        <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
+          <span class="tracking-widest2 lowercase text-sm md:text-base">photography</span>
+          <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">portraits, mood, quiet moments</span>
+        </div>
+        <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
+          <span class="tracking-widest2 lowercase text-sm md:text-base">color grading</span>
+          <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">tone, texture, atmosphere</span>
+        </div>
+        <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
+          <span class="tracking-widest2 lowercase text-sm md:text-base">sound design</span>
+          <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">foley, texture, ambience</span>
+        </div>
+        <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
+          <span class="tracking-widest2 lowercase text-sm md:text-base">photo retouching</span>
+          <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">clean, natural, unforced</span>
+        </div>
       </div>
-      <div class="discography-item" aria-hidden="true">
-        <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
-        <div class="skeleton skeleton-line w-24 mt-3"></div>
+    </div>
+  </section>
+
+  <!-- WORK -->
+  <section id="work" class="relative bg-sky-light py-28 md:py-36 px-6">
+    <div class="max-w-5xl mx-auto">
+      <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-4">selected work</p>
+      <h2 class="reveal font-serif italic text-2xl md:text-3xl text-center mb-12">a few things I've made</h2>
+      <div class="reveal flex flex-wrap justify-center gap-2 mb-12 text-xs tracking-widest2 lowercase">
+        <button data-filter="all" class="filter-btn px-4 py-2 border border-ink/30 bg-ink text-sky-light">all</button>
+        <button data-filter="video" class="filter-btn px-4 py-2 border border-ink/30">video</button>
+        <button data-filter="music" class="filter-btn px-4 py-2 border border-ink/30">music</button>
+        <button data-filter="photo" class="filter-btn px-4 py-2 border border-ink/30">photo</button>
+        <button data-filter="album" class="filter-btn px-4 py-2 border border-ink/30">album</button>
       </div>
-      <div class="discography-item" aria-hidden="true">
-        <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
-        <div class="skeleton skeleton-line w-24 mt-3"></div>
+      <div id="work-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+        <div class="work-item work-card p-6 md:row-span-2 min-h-[220px] flex flex-col justify-between" aria-hidden="true">
+          <div class="skeleton skeleton-line w-14"></div>
+          <div class="space-y-2">
+            <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
+            <div class="skeleton skeleton-line w-1/2"></div>
+          </div>
+        </div>
+        <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
+          <div class="skeleton skeleton-line w-14"></div>
+          <div class="space-y-2">
+            <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
+            <div class="skeleton skeleton-line w-1/2"></div>
+          </div>
+        </div>
+        <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
+          <div class="skeleton skeleton-line w-14"></div>
+          <div class="space-y-2">
+            <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
+            <div class="skeleton skeleton-line w-1/2"></div>
+          </div>
+        </div>
       </div>
-      <div class="discography-item" aria-hidden="true">
-        <div class="discography-frame skeleton w-56 h-56 md:w-72 md:h-72 border border-ink/10"></div>
-        <div class="skeleton skeleton-line w-24 mt-3"></div>
+      <p class="reveal text-center text-xs text-ink/40 mt-10">replace these with your real projects, thumbnails and links.</p>
+    </div>
+  </section>
+
+  <!-- GALLERY (MASONRY) -->
+  <section id="gallery" class="relative bg-sky-mid py-28 md:py-36 px-6">
+    <div class="max-w-6xl mx-auto">
+      <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-4">visual journal</p>
+      <h2 class="reveal font-serif italic text-2xl md:text-3xl text-center mb-16">moments captured</h2>
+      <div class="reveal masonry-col">
+        <div class="masonry-item skeleton w-full h-56" aria-hidden="true"></div>
+        <div class="masonry-item skeleton w-full h-72" aria-hidden="true"></div>
+        <div class="masonry-item skeleton w-full h-64" aria-hidden="true"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- GALLERY LIGHTBOX MODAL -->
+  <div id="gallery-lightbox" class="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-10" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 cursor-pointer" id="lightbox-bg-close"></div>
+    <div id="lightbox-content-wrap" class="relative z-10 w-full max-w-5xl flex flex-col items-center">
+      <button id="lightbox-close-btn" class="absolute -top-5 right-0 md:-right-12 w-10 h-10 flex items-center justify-center text-sky-light/70 hover:text-sky-light hover:bg-ink/50 rounded-full transition-all">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+      <img id="lightbox-img" src="" alt="Detail View" class="w-auto h-auto max-w-full max-h-[75vh] object-contain shadow-2xl border border-sky-light/10" />
+      <div class="mt-6 text-center w-full max-w-xl mx-auto px-4">
+        <h3 id="lightbox-title" class="font-serif italic text-2xl md:text-3xl text-sky-light mb-1">&nbsp;</h3>
+        <p id="lightbox-date" class="text-xs tracking-widest2 lowercase text-sky-light/60">&nbsp;</p>
       </div>
     </div>
   </div>
 
-  <p class="reveal text-center text-xs text-ink/40 mt-10 px-6">klik gambar untuk lihat detail rilisan &amp; tautan streaming.</p>
-</section>
-<!-- SERVICES — tracklist style -->
-<section id="services" class="relative bg-sky-mid py-28 md:py-36 px-6">
-  <div class="max-w-2xl mx-auto">
-    <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-14">services</p>
-    <div class="reveal flex flex-col">
-      <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
-        <span class="tracking-widest2 lowercase text-sm md:text-base">video editing</span>
-        <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">narrative cuts, color, pacing</span>
+  <!-- SELECTED WORK DETAIL OVERLAY -->
+  <div id="work-modal" class="fixed inset-0 z-[105] hidden items-center justify-center p-4 md:p-8" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="absolute inset-0" data-work-close></div>
+    <article id="work-modal-panel" class="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-sky-light border border-white/70 shadow-2xl">
+      <button type="button" data-work-close aria-label="close" class="fixed md:absolute top-5 right-5 w-10 h-10 z-10 grid place-items-center bg-sky-light/90 border border-ink/15 hover:bg-ink hover:text-sky-light transition-colors">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="grid md:grid-cols-2 min-h-[420px]">
+        <div id="work-modal-image-wrap" class="bg-sky-deep min-h-64 md:min-h-full">
+          <img id="work-modal-image" src="" alt="" class="w-full h-full max-h-[82vh] object-cover">
+        </div>
+        <div class="p-7 md:p-12 flex flex-col justify-center">
+          <p id="work-modal-meta" class="text-[11px] tracking-widest2 lowercase text-fog mb-4"></p>
+          <h3 id="work-modal-title" class="font-serif italic text-3xl md:text-4xl mb-7"></h3>
+          <div id="work-modal-description" class="work-description text-sm leading-relaxed text-ink/70"></div>
+        </div>
       </div>
-      <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
-        <span class="tracking-widest2 lowercase text-sm md:text-base">music production</span>
-        <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">composition, mixing, sound design</span>
+    </article>
+  </div>
+
+  <!-- DISCOGRAPHY MODAL -->
+  <div id="discography-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-8" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="absolute inset-0" data-modal-close></div>
+    <div id="discography-modal-panel" class="relative w-full max-w-4xl max-h-[88vh] bg-sky-light border border-ink/10 shadow-2xl flex flex-col md:flex-row overflow-hidden">
+      <button type="button" data-modal-close aria-label="close" class="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center border border-ink/20 bg-sky-light/90 hover:bg-ink hover:text-sky-light transition-colors">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+      <div class="md:w-1/2 bg-sky-deep shrink-0">
+        <img id="discography-modal-img" src="" alt="" class="w-full h-64 md:h-full object-cover" />
       </div>
-      <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
-        <span class="tracking-widest2 lowercase text-sm md:text-base">photography</span>
-        <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">portraits, mood, quiet moments</span>
-      </div>
-      <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
-        <span class="tracking-widest2 lowercase text-sm md:text-base">color grading</span>
-        <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">tone, texture, atmosphere</span>
-      </div>
-      <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
-        <span class="tracking-widest2 lowercase text-sm md:text-base">sound design</span>
-        <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">foley, texture, ambience</span>
-      </div>
-      <div class="track-row group flex items-center justify-between py-5 px-2 hover:bg-white/40 transition-colors">
-        <span class="tracking-widest2 lowercase text-sm md:text-base">photo retouching</span>
-        <span class="text-xs text-fog opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">clean, natural, unforced</span>
+      <div class="md:w-1/2 flex flex-col justify-center gap-8 p-8 md:p-10 overflow-y-auto">
+        <div>
+          <p class="text-[11px] tracking-widest2 lowercase text-fog mb-3">discography</p>
+          <h3 id="discography-modal-title" class="font-serif italic text-2xl md:text-3xl mb-2 text-ink">&nbsp;</h3>
+          <p id="discography-modal-desc" class="text-sm text-ink/60">&nbsp;</p>
+        </div>
+        <div class="flex flex-col gap-3 text-xs tracking-widest2 lowercase">
+          <a id="discography-modal-spotify" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 border border-ink/20 px-4 py-3 text-ink/80 hover:border-[#1DB954] hover:text-[#1DB954] transition-colors">
+            <i class="fa-brands fa-spotify text-base"></i> listen on spotify
+          </a>
+          <a id="discography-modal-soundcloud" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 border border-ink/20 px-4 py-3 text-ink/80 hover:border-[#FF5500] hover:text-[#FF5500] transition-colors">
+            <i class="fa-brands fa-soundcloud text-base"></i> listen on soundcloud
+          </a>
+        </div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- WORK -->
-<section id="work" class="relative bg-sky-light py-28 md:py-36 px-6">
-  <div class="max-w-5xl mx-auto">
-    <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-4">selected work</p>
-    <h2 class="reveal font-serif italic text-2xl md:text-3xl text-center mb-12">a few things I've made</h2>
-
-    <div class="reveal flex flex-wrap justify-center gap-2 mb-12 text-xs tracking-widest2 lowercase">
-      <button data-filter="all" class="filter-btn px-4 py-2 border border-ink/30 bg-ink text-sky-light">all</button>
-      <button data-filter="video" class="filter-btn px-4 py-2 border border-ink/30">video</button>
-      <button data-filter="music" class="filter-btn px-4 py-2 border border-ink/30">music</button>
-      <button data-filter="photo" class="filter-btn px-4 py-2 border border-ink/30">photo</button>
-      <button data-filter="album" class="filter-btn px-4 py-2 border border-ink/30">album</button>
-    </div>
-
-    <div id="work-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-      <div class="work-item work-card p-6 md:row-span-2 min-h-[220px] flex flex-col justify-between" aria-hidden="true">
-        <div class="skeleton skeleton-line w-14"></div>
-        <div class="space-y-2">
-          <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
-          <div class="skeleton skeleton-line w-1/2"></div>
-        </div>
-      </div>
-      <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
-        <div class="skeleton skeleton-line w-14"></div>
-        <div class="space-y-2">
-          <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
-          <div class="skeleton skeleton-line w-1/2"></div>
-        </div>
-      </div>
-      <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
-        <div class="skeleton skeleton-line w-14"></div>
-        <div class="space-y-2">
-          <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
-          <div class="skeleton skeleton-line w-1/2"></div>
-        </div>
-      </div>
-      <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
-        <div class="skeleton skeleton-line w-14"></div>
-        <div class="space-y-2">
-          <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
-          <div class="skeleton skeleton-line w-1/2"></div>
-        </div>
-      </div>
-      <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
-        <div class="skeleton skeleton-line w-14"></div>
-        <div class="space-y-2">
-          <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
-          <div class="skeleton skeleton-line w-1/2"></div>
-        </div>
-      </div>
-      <div class="work-item work-card p-6 min-h-[160px] flex flex-col justify-between" aria-hidden="true">
-        <div class="skeleton skeleton-line w-14"></div>
-        <div class="space-y-2">
-          <div class="skeleton skeleton-line w-3/4" style="height:1.1rem"></div>
-          <div class="skeleton skeleton-line w-1/2"></div>
-        </div>
+  <!-- CONTACT -->
+  <section id="contact" class="relative bg-grass-deep text-sky-light py-28 md:py-36 px-6 overflow-hidden">
+    <div class="grain"></div>
+    <div class="relative max-w-xl mx-auto text-center">
+      <p class="reveal text-[11px] tracking-widest2 lowercase text-sky-light/70 mb-6">contact</p>
+      <h2 class="reveal font-serif italic text-3xl md:text-4xl mb-8">let's make something</h2>
+      <p class="reveal text-sm text-sky-light/80 mb-10 leading-relaxed">
+        Open for freelance edits, original scores and photo sessions.
+        Send a message and tell me what you're building.
+      </p>
+      <button id="copy-email" class="reveal text-sm tracking-widest2 lowercase border-b border-sky-light/50 pb-1 hover:border-sky-light transition-colors">
+        hello@raidencatra.com
+      </button>
+      <div class="reveal flex justify-center gap-6 mt-10 text-xs tracking-widest2 lowercase text-sky-light/70">
+        <a href="#" class="hover:text-sky-light transition-colors">instagram</a>
+        <a href="#" class="hover:text-sky-light transition-colors">youtube</a>
+        <a href="#" class="hover:text-sky-light transition-colors">soundcloud</a>
       </div>
     </div>
+  </section>
 
-    <p class="reveal text-center text-xs text-ink/40 mt-10">replace these with your real projects, thumbnails and links.</p>
-  </div>
-</section>
+  <footer class="bg-ink text-sky-light/60 py-8 px-6 text-center text-[11px] tracking-widest2 lowercase">
+    <p>raidencatra   design direction inspired by porter robinson's <span class="italic font-serif normal-case tracking-normal">nurture</span> era</p>
+    <p class="mt-1">&copy; <span id="year"></span> raidencatra. all rights reserved.</p>
+  </footer>
 
-<!-- GALLERY (MASONRY) -->
-<section id="gallery" class="relative bg-sky-mid py-28 md:py-36 px-6">
-  <div class="max-w-6xl mx-auto">
-    <p class="reveal text-[11px] tracking-widest2 lowercase text-fog text-center mb-4">visual journal</p>
-    <h2 class="reveal font-serif italic text-2xl md:text-3xl text-center mb-16">moments captured</h2>
-
-    <!-- MASONRY GRID WRAPPER -->
-    <div class="reveal masonry-col">
-      <div class="masonry-item skeleton w-full h-56" aria-hidden="true"></div>
-      <div class="masonry-item skeleton w-full h-72" aria-hidden="true"></div>
-      <div class="masonry-item skeleton w-full h-64" aria-hidden="true"></div>
-      <div class="masonry-item skeleton w-full h-80" aria-hidden="true"></div>
-      <div class="masonry-item skeleton w-full h-60" aria-hidden="true"></div>
-      <div class="masonry-item skeleton w-full h-72" aria-hidden="true"></div>
+  <!-- FLOATING MUSIC PLAYER -->
+  <div id="floating-player" class="fixed bottom-6 right-6 z-[100] flex items-center gap-3 bg-sky-light/85 backdrop-blur-xl border border-ink/10 shadow-2xl p-2 rounded-full hidden transition-all duration-500">
+    <img id="player-thumb" src="" alt="cover" class="w-10 h-10 rounded-full object-cover shadow-inner" style="animation: spin-slow 5s linear infinite; animation-play-state: paused;">
+    <div class="flex flex-col min-w-[80px] max-w-[140px] pr-2">
+      <span id="player-title" class="text-xs font-serif italic truncate text-ink"></span>
+      <span class="text-[9px] tracking-widest2 lowercase text-fog">now playing</span>
     </div>
-  </div>
-</section>
-
-<!-- GALLERY LIGHTBOX MODAL -->
-<div id="gallery-lightbox" class="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-10" role="dialog" aria-modal="true">
-  <!-- Area klik luar untuk menutup -->
-  <div class="absolute inset-0 cursor-pointer" id="lightbox-bg-close"></div>
-  
-  <div id="lightbox-content-wrap" class="relative z-10 w-full max-w-5xl flex flex-col items-center">
-    
-    <!-- Tombol Close -->
-    <button id="lightbox-close-btn" class="absolute -top-5 right-0 md:-right-12 w-10 h-10 flex items-center justify-center text-sky-light/70 hover:text-sky-light hover:bg-ink/50 rounded-full transition-all">
-      <i class="fa-solid fa-xmark text-xl"></i>
+    <button id="player-toggle" class="w-9 h-9 rounded-full bg-ink text-sky-light flex items-center justify-center hover:bg-grass-deep transition-colors mr-1 shadow">
+      <i class="fa-solid fa-play text-xs pl-0.5"></i>
     </button>
-    
-    <!-- Image Container -->
-    <img id="lightbox-img" src="" alt="Detail View" class="w-auto h-auto max-w-full max-h-[75vh] object-contain shadow-2xl border border-sky-light/10" />
-    
-    <!-- Meta Info (Title & Date) -->
-    <div class="mt-6 text-center w-full max-w-xl mx-auto px-4">
-      <h3 id="lightbox-title" class="font-serif italic text-2xl md:text-3xl text-sky-light mb-1">&nbsp;</h3>
-      <p id="lightbox-date" class="text-xs tracking-widest2 lowercase text-sky-light/60">&nbsp;</p>
-    </div>
+    <audio id="player-audio" loop></audio>
   </div>
-</div>
 
-<!-- SELECTED WORK DETAIL OVERLAY -->
-<div id="work-modal" class="fixed inset-0 z-[105] hidden items-center justify-center p-4 md:p-8" role="dialog" aria-modal="true" aria-hidden="true">
-  <div class="absolute inset-0" data-work-close></div>
-  <article id="work-modal-panel" class="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-sky-light border border-white/70 shadow-2xl">
-    <button type="button" data-work-close aria-label="close" class="fixed md:absolute top-5 right-5 w-10 h-10 z-10 grid place-items-center bg-sky-light/90 border border-ink/15 hover:bg-ink hover:text-sky-light transition-colors">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div class="grid md:grid-cols-2 min-h-[420px]">
-      <div id="work-modal-image-wrap" class="bg-sky-deep min-h-64 md:min-h-full">
-        <img id="work-modal-image" src="" alt="" class="w-full h-full max-h-[82vh] object-cover">
-      </div>
-      <div class="p-7 md:p-12 flex flex-col justify-center">
-        <p id="work-modal-meta" class="text-[11px] tracking-widest2 lowercase text-fog mb-4"></p>
-        <h3 id="work-modal-title" class="font-serif italic text-3xl md:text-4xl mb-7"></h3>
-        <div id="work-modal-description" class="work-description text-sm leading-relaxed text-ink/70"></div>
-      </div>
-    </div>
-  </article>
-</div>
+  <style>
+    @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+    .about-description p + p { margin-top: 1rem; }
+    .about-description p { font-family: 'Jost', sans-serif; font-size: 1rem; color: rgba(36,38,31,0.7); text-align: left; }
+    @media(min-width: 768px) { .about-description p { text-align: center; } }
+    .about-description p:first-of-type { font-family: 'Fraunces', serif; font-size: 1.5rem; line-height: 1.6; color: rgba(36,38,31,0.9); }
+  </style>
 
-<!-- DISCOGRAPHY MODAL -->
-<div id="discography-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-8" role="dialog" aria-modal="true" aria-hidden="true">
-  <div class="absolute inset-0" data-modal-close></div>
-  <div id="discography-modal-panel" class="relative w-full max-w-4xl max-h-[88vh] bg-sky-light border border-ink/10 shadow-2xl flex flex-col md:flex-row overflow-hidden">
-    <button type="button" data-modal-close aria-label="close"
-      class="absolute top-4 right-4 z-10 w-9 h-9 flex items-center justify-center border border-ink/20 bg-sky-light/90 hover:bg-ink hover:text-sky-light transition-colors">
-      <i class="fa-solid fa-xmark text-sm"></i>
-    </button>
-
-    <div class="md:w-1/2 bg-sky-deep shrink-0">
-      <img id="discography-modal-img" src="" alt="" class="w-full h-64 md:h-full object-cover" />
-    </div>
-
-    <div class="md:w-1/2 flex flex-col justify-center gap-8 p-8 md:p-10 overflow-y-auto">
-      <div>
-        <p class="text-[11px] tracking-widest2 lowercase text-fog mb-3">discography</p>
-        <h3 id="discography-modal-title" class="font-serif italic text-2xl md:text-3xl mb-2 text-ink">&nbsp;</h3>
-        <p id="discography-modal-desc" class="text-sm text-ink/60">&nbsp;</p>
-      </div>
-      <div class="flex flex-col gap-3 text-xs tracking-widest2 lowercase">
-        <a id="discography-modal-spotify" href="#" target="_blank" rel="noopener noreferrer"
-          class="flex items-center gap-3 border border-ink/20 px-4 py-3 text-ink/80 hover:border-[#1DB954] hover:text-[#1DB954] transition-colors">
-          <i class="fa-brands fa-spotify text-base"></i> listen on spotify
-        </a>
-        <a id="discography-modal-soundcloud" href="#" target="_blank" rel="noopener noreferrer"
-          class="flex items-center gap-3 border border-ink/20 px-4 py-3 text-ink/80 hover:border-[#FF5500] hover:text-[#FF5500] transition-colors">
-          <i class="fa-brands fa-soundcloud text-base"></i> listen on soundcloud
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CONTACT -->
-<section id="contact" class="relative bg-grass-deep text-sky-light py-28 md:py-36 px-6 overflow-hidden">
-  <div class="grain"></div>
-  <div class="relative max-w-xl mx-auto text-center">
-    <p class="reveal text-[11px] tracking-widest2 lowercase text-sky-light/70 mb-6">contact</p>
-    <h2 class="reveal font-serif italic text-3xl md:text-4xl mb-8">let's make something</h2>
-    <p class="reveal text-sm text-sky-light/80 mb-10 leading-relaxed">
-      Open for freelance edits, original scores and photo sessions.
-      Send a message and tell me what you're building.
-    </p>
-    <button id="copy-email" class="reveal text-sm tracking-widest2 lowercase border-b border-sky-light/50 pb-1 hover:border-sky-light transition-colors">
-      hello@raidencatra.com
-    </button>
-    <div class="reveal flex justify-center gap-6 mt-10 text-xs tracking-widest2 lowercase text-sky-light/70">
-      <a href="#" class="hover:text-sky-light transition-colors">instagram</a>
-      <a href="#" class="hover:text-sky-light transition-colors">youtube</a>
-      <a href="#" class="hover:text-sky-light transition-colors">soundcloud</a>
-    </div>
-  </div>
-</section>
-
-<footer class="bg-ink text-sky-light/60 py-8 px-6 text-center text-[11px] tracking-widest2 lowercase">
-  <p>raidencatra — design direction inspired by porter robinson's <span class="italic font-serif normal-case tracking-normal">nurture</span> era</p>
-  <p class="mt-1">&copy; <span id="year"></span> raidencatra. all rights reserved.</p>
-</footer>
-<script>
-  // === FULLSCREEN OVERLAY MENU INTERACTION ===
-  const menuBtn = document.getElementById('menu-btn');
-  const fullscreenMenu = document.getElementById('fullscreen-menu');
-  const overlayLinks = document.querySelectorAll('.overlay-link');
-  let isMenuOpen = false;
-
-  function toggleMenu() {
-    isMenuOpen = !isMenuOpen;
-    if (isMenuOpen) {
-      // Buka Menu Overlay
-      fullscreenMenu.classList.remove('invisible', 'opacity-0');
-      fullscreenMenu.classList.add('opacity-100');
-      menuBtn.textContent = 'close';
-      menuBtn.classList.add('bg-sky-light/90');
-      document.body.style.overflow = 'hidden'; 
-    } else {
-      // Tutup Menu Overlay
-      fullscreenMenu.classList.remove('opacity-100');
-      fullscreenMenu.classList.add('opacity-0');
-      menuBtn.textContent = 'menu';
-      menuBtn.classList.remove('bg-sky-light/90');
-      document.body.style.overflow = '';
-      
-      // Tunggu transisi selesai sebelum hidden seutuhnya
-      setTimeout(() => {
-        if (!isMenuOpen) fullscreenMenu.classList.add('invisible');
-      }, 500);
-    }
-  }
-
-  menuBtn.addEventListener('click', toggleMenu);
-
-  overlayLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      if (isMenuOpen) toggleMenu();
-    });
-  });
-</script>
-<script>
-// year
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-  // === OPTIMAL SMOOTH PARALLAX HERO (LERP) ===
-  const heroImg = document.getElementById('hero-image');
-  const heroSection = document.getElementById('top');
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Variabel untuk menampung posisi scroll asli dan posisi scroll yang dihaluskan
-  let currentScrollY = 0;
-  let targetScrollY = 0;
-
-  // Fungsi Linear Interpolation untuk efek pergerakan yang "mengalir" (zen-like)
-  function lerp(start, end, factor) {
-    return start + (end - start) * factor;
-  }
-
-  function animateParallax() {
-    if (!heroImg || !heroSection) return;
-
-    const rect = heroSection.getBoundingClientRect();
-    
-    // Hanya render kalkulasi jika hero section masih ada di viewport untuk menghemat memori
-    if (rect.bottom > 0) {
-      // Lakukan penghalusan pergerakan. Nilai 0.08 adalah tingkat kelembutan (bisa diubah)
-      currentScrollY = lerp(currentScrollY, targetScrollY, 0.08);
-      
-      const heroHeight = heroSection.offsetHeight;
-      const progress = Math.max(currentScrollY / heroHeight, 0);
-      
-      // Jarak geser vertikal maskimal (15% dari tinggi hero). 
-      // Desain CSS Anda (height: 120%, top: -10%) sangat aman dari blank space untuk ini.
-      const maxShiftPx = heroHeight * 0.15; 
-      
-      // Menambahkan efek zoom in sangat pelan untuk ilusi kedalaman ruang
-      const scale = 1 + (progress * 0.04); 
-      
-      // Gunakan hardware acceleration (translate3d)
-      heroImg.style.transform = `translate3d(0, ${progress * maxShiftPx}px, 0) scale(${scale})`;
-    }
-    
-    // Loop terus menerus seiring layar berjalan
-    requestAnimationFrame(animateParallax);
-  }
-
-  if (!prefersReducedMotion) {
-    // Tangkap target scroll secara efisien
-    window.addEventListener('scroll', () => {
-      targetScrollY = window.scrollY;
-    }, { passive: true });
-    
-    // Mulai animasi
-    requestAnimationFrame(animateParallax);
-  }  // nav background on scroll
-  const nav = document.getElementById('site-nav');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) {
-      nav.classList.add('bg-sky-light/80', 'backdrop-blur', 'shadow-sm');
-    } else {
-      nav.classList.remove('bg-sky-light/80', 'backdrop-blur', 'shadow-sm');
-    }
-  });
-
-//  gallery lightbox
-// === GALLERY LIGHTBOX INTERACTION ===
-  const galleryItems = document.querySelectorAll('.gallery-item');
-  const lightbox = document.getElementById('gallery-lightbox');
-  const lightboxImg = document.getElementById('lightbox-img');
-  const lightboxTitle = document.getElementById('lightbox-title');
-  const lightboxDate = document.getElementById('lightbox-date');
-  
-  // Elemen untuk menutup
-  const lightboxBgClose = document.getElementById('lightbox-bg-close');
-  const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
-
-  function openLightbox(item) {
-    const imgEl = item.querySelector('img');
-    if (!imgEl) return;
-
-    // Set Data
-    lightboxImg.src = imgEl.src;
-    lightboxImg.alt = item.dataset.title || 'Gallery Image';
-    lightboxTitle.textContent = item.dataset.title || 'untitled';
-    lightboxDate.textContent = item.dataset.date || '';
-
-    // Buka Modal
-    lightbox.classList.add('is-open');
-    document.body.style.overflow = 'hidden'; // cegah scroll background
-  }
-
-  function closeLightbox() {
-    lightbox.classList.remove('is-open');
-    document.body.style.overflow = '';
-    
-    // Bersihkan isi setelah transisi selesai (opsional)
-    setTimeout(() => {
-      if (!lightbox.classList.contains('is-open')) {
-        lightboxImg.src = '';
+  <script>
+    // === FULLSCREEN OVERLAY MENU INTERACTION ===
+    const menuBtn = document.getElementById('menu-btn');
+    const fullscreenMenu = document.getElementById('fullscreen-menu');
+    const overlayLinks = document.querySelectorAll('.overlay-link');
+    let isMenuOpen = false;
+    function toggleMenu() {
+      isMenuOpen = !isMenuOpen;
+      if (isMenuOpen) {
+        fullscreenMenu.classList.remove('invisible', 'opacity-0');
+        fullscreenMenu.classList.add('opacity-100');
+        menuBtn.textContent = 'close';
+        menuBtn.classList.add('bg-sky-light/90');
+        document.body.style.overflow = 'hidden';
+      } else {
+        fullscreenMenu.classList.remove('opacity-100');
+        fullscreenMenu.classList.add('opacity-0');
+        menuBtn.textContent = 'menu';
+        menuBtn.classList.remove('bg-sky-light/90');
+        document.body.style.overflow = '';
+        setTimeout(() => {
+          if (!isMenuOpen) fullscreenMenu.classList.add('invisible');
+        }, 500);
       }
-    }, 400);
-  }
-
-  // Event Listeners untuk klik pada setiap gambar masonry
-  galleryItems.forEach(item => {
-    item.addEventListener('click', () => openLightbox(item));
-  });
-
-  // Event Listeners untuk menutup modal
-  if (lightboxBgClose) lightboxBgClose.addEventListener('click', closeLightbox);
-  if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
-
-  // Tutup dengan tombol Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
-      closeLightbox();
     }
-  });
-
-  // reveal on scroll (single orchestrated reveal per section)
-  const revealEls = document.querySelectorAll('.reveal');
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('in'), i % 8 * 60);
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(el => io.observe(el));
-
-  // work filter
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const workItems = document.querySelectorAll('.work-item');
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('bg-ink', 'text-sky-light'));
-      btn.classList.add('bg-ink', 'text-sky-light');
-      const filter = btn.dataset.filter;
-      workItems.forEach(item => {
-        const show = filter === 'all' || item.dataset.cat === filter;
-        item.style.display = show ? '' : 'none';
+    menuBtn.addEventListener('click', toggleMenu);
+    overlayLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (isMenuOpen) toggleMenu();
       });
     });
-  });
 
-  // copy email
-  const copyBtn = document.getElementById('copy-email');
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText('hello@raidencatra.com').then(() => {
-      const original = copyBtn.textContent;
-      copyBtn.textContent = 'copied to clipboard';
-      setTimeout(() => copyBtn.textContent = original, 1800);
-    });
-  });
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-  // === DISCOGRAPHY: marquee loop + overlay detail ===
-  // === DISCOGRAPHY: marquee loop + overlay detail ===
-  const discoTrack = document.getElementById('discography-track');
-  if (discoTrack) {
-    
-    // --- LOKASI SCRIPT MARQUEE JAVASCRIPT ---
-    let currentX = 0;
-    let isPaused = false;
-    const speed = 1.2; // Kecepatan pixel per frame. Bisa disesuaikan.
-
-    function animateMarquee() {
-      if (!isPaused) {
-        currentX -= speed;
-        // Karena elemen di-duplicate 2x (total 10 item), setengah dari scrollWidth adalah titik reset loop
-        if (Math.abs(currentX) >= discoTrack.scrollWidth / 2) {
-          currentX = 0;
-        }
-        // Menggunakan translate3d untuk akselerasi hardware yang lebih smooth
-        discoTrack.style.transform = `translate3d(${currentX}px, 0, 0)`;
+    // === OPTIMAL SMOOTH PARALLAX HERO (LERP) ===
+    const heroImg = document.getElementById('hero-image');
+    const heroSection = document.getElementById('top');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let currentScrollY = 0;
+    let targetScrollY = 0;
+    function lerp(start, end, factor) {
+      return start + (end - start) * factor;
+    }
+    function animateParallax() {
+      if (!heroImg || !heroSection) return;
+      const rect = heroSection.getBoundingClientRect();
+      if (rect.bottom > 0) {
+        currentScrollY = lerp(currentScrollY, targetScrollY, 0.08);
+        const heroHeight = heroSection.offsetHeight;
+        const progress = Math.max(currentScrollY / heroHeight, 0);
+        const maxShiftPx = heroHeight * 0.15;
+        const scale = 1 + (progress * 0.04);
+        heroImg.style.transform = `translate3d(0, ${progress * maxShiftPx}px, 0) scale(${scale})`;
       }
-      requestAnimationFrame(animateMarquee);
+      requestAnimationFrame(animateParallax);
     }
-    
-    // Paksa mulai animasi marquee
-    requestAnimationFrame(animateMarquee);
-
-    // Event listener agar marquee berhenti saat di-hover (mempertahankan UX yang lama)
-    const marqueeContainer = document.querySelector('.discography-marquee');
-    if (marqueeContainer) {
-      marqueeContainer.addEventListener('mouseenter', () => { isPaused = true; });
-      marqueeContainer.addEventListener('mouseleave', () => { isPaused = false; });
+    if (!prefersReducedMotion) {
+      window.addEventListener('scroll', () => {
+        targetScrollY = window.scrollY;
+      }, { passive: true });
+      requestAnimationFrame(animateParallax);
     }
-    // ----------------------------------------
 
-    const modal = document.getElementById('discography-modal');
-    const modalPanel = document.getElementById('discography-modal-panel');
-    const modalImg = document.getElementById('discography-modal-img');
-    const modalTitle = document.getElementById('discography-modal-title');
-    const modalDesc = document.getElementById('discography-modal-desc');
-    const modalSpotify = document.getElementById('discography-modal-spotify');
-    const modalSoundcloud = document.getElementById('discography-modal-soundcloud');
+    const nav = document.getElementById('site-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        nav.classList.add('bg-sky-light/80', 'backdrop-blur', 'shadow-sm');
+      } else {
+        nav.classList.remove('bg-sky-light/80', 'backdrop-blur', 'shadow-sm');
+      }
+    });
 
-    function openDiscographyModal(item) {
-      const img = item.querySelector('img');
-      modalImg.src = img ? img.src : '';
-      modalImg.alt = img ? img.alt : '';
-      modalTitle.textContent = item.dataset.title || '';
-      modalDesc.textContent = item.dataset.desc || '';
-      modalSpotify.href = item.dataset.spotify || '#';
-      modalSoundcloud.href = item.dataset.soundcloud || '#';
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      modal.setAttribute('aria-hidden', 'false');
+    // === GALLERY LIGHTBOX INTERACTION ===
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    const lightbox = document.getElementById('gallery-lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxTitle = document.getElementById('lightbox-title');
+    const lightboxDate = document.getElementById('lightbox-date');
+    const lightboxBgClose = document.getElementById('lightbox-bg-close');
+    const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
+    function openLightbox(item) {
+      const imgEl = item.querySelector('img');
+      if (!imgEl) return;
+      lightboxImg.src = imgEl.src;
+      lightboxImg.alt = item.dataset.title || 'Gallery Image';
+      lightboxTitle.textContent = item.dataset.title || 'untitled';
+      lightboxDate.textContent = item.dataset.date || '';
+      lightbox.classList.add('is-open');
       document.body.style.overflow = 'hidden';
-      requestAnimationFrame(() => modal.classList.add('is-open'));
     }
-
-    function closeDiscographyModal() {
-      modal.classList.remove('is-open');
-      modal.setAttribute('aria-hidden', 'true');
+    function closeLightbox() {
+      lightbox.classList.remove('is-open');
       document.body.style.overflow = '';
       setTimeout(() => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }, 350);
+        if (!lightbox.classList.contains('is-open')) {
+          lightboxImg.src = '';
+        }
+      }, 400);
     }
-
-    discoTrack.addEventListener('click', (e) => {
-      // Gunakan .closest() yang mengabaikan duplikat saat marquee bergerak
-      const item = e.target.closest('.discography-item');
-      if (item) openDiscographyModal(item);
+    galleryItems.forEach(item => {
+      item.addEventListener('click', () => openLightbox(item));
     });
-
-    modal.querySelectorAll('[data-modal-close]').forEach((el) => {
-      el.addEventListener('click', closeDiscographyModal);
-    });
-
+    if (lightboxBgClose) lightboxBgClose.addEventListener('click', closeLightbox);
+    if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeDiscographyModal();
+      if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
+        closeLightbox();
+      }
     });
-  }
-</script>
-<script>
-  // === DATABASE CONTENT ===
-  const dynamicEscape = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  })[char]);
 
-  async function publicData(url) {
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!response.ok) throw new Error('Content is temporarily unavailable.');
-    return (await response.json()).data;
-  }
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('in'), i % 8 * 60);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => io.observe(el));
 
-  function discographyCard(item, duplicate = false) {
-    return `<button type="button" class="discography-item" ${duplicate ? 'aria-hidden="true" tabindex="-1"' : ''}
-      data-title="${dynamicEscape(item.title)}" data-desc="${dynamicEscape(`${item.type} — ${item.year}`)}"
-      data-spotify="${dynamicEscape(item.spotify_url)}" data-soundcloud="${dynamicEscape(item.soundcloud_url)}">
-      <div class="discography-frame w-56 h-56 md:w-72 md:h-72 border border-ink/10">
-        <img src="${dynamicEscape(item.image_url)}" alt="${duplicate ? '' : dynamicEscape(`${item.title} cover`)}" loading="lazy" class="w-full h-full object-cover">
-        <div class="discography-hover"><i class="fa-solid fa-expand text-sky-light text-xl"></i></div>
-      </div>
-      <p class="mt-3 text-xs tracking-widest2 lowercase text-ink/70 text-left">${dynamicEscape(item.title)}</p>
-    </button>`;
-  }
-
-  function bindDynamicFilters() {
-    document.querySelectorAll('.filter-btn').forEach((button) => {
-      button.addEventListener('click', () => {
-        const filter = button.dataset.filter;
-        document.querySelectorAll('#work-grid .work-item').forEach((item) => {
-          item.style.display = filter === 'all' || item.dataset.cat === filter ? '' : 'none';
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const workItems = document.querySelectorAll('.work-item');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('bg-ink', 'text-sky-light'));
+        btn.classList.add('bg-ink', 'text-sky-light');
+        const filter = btn.dataset.filter;
+        workItems.forEach(item => {
+          const show = filter === 'all' || item.dataset.cat === filter;
+          item.style.display = show ? '' : 'none';
         });
       });
     });
-  }
 
-  const workModal = document.getElementById('work-modal');
-  function openWorkModal(item) {
-    const image = document.getElementById('work-modal-image');
-    const imageWrap = document.getElementById('work-modal-image-wrap');
-    document.getElementById('work-modal-title').textContent = item.title;
-    document.getElementById('work-modal-meta').textContent = `${item.category} — ${item.year}`;
-    document.getElementById('work-modal-description').innerHTML = item.description || '<p>No description added yet.</p>';
-    imageWrap.classList.toggle('hidden', !item.image_url);
-    if (!item.image_url) {
-      workModal.querySelector('.grid').classList.remove('md:grid-cols-2');
-    } else {
-      workModal.querySelector('.grid').classList.add('md:grid-cols-2');
-      image.src = item.image_url;
-      image.alt = item.title;
-    }
-    workModal.classList.remove('hidden');
-    workModal.classList.add('flex');
-    workModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => workModal.classList.add('is-open'));
-  }
-
-  function closeWorkModal() {
-    workModal.classList.remove('is-open');
-    workModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    setTimeout(() => {
-      workModal.classList.add('hidden');
-      workModal.classList.remove('flex');
-    }, 400);
-  }
-  workModal.querySelectorAll('[data-work-close]').forEach((element) => element.addEventListener('click', closeWorkModal));
-
-  async function hydrateContent() {
-    try {
-      const [discography, works, gallery] = await Promise.all([
-        publicData('/api/discography'),
-        publicData('/api/works?limit=6'),
-        publicData('/api/gallery?limit=6')
-      ]);
-
-      const track = document.getElementById('discography-track');
-      track.style.transform = 'translate3d(0,0,0)';
-      track.innerHTML = discography.length
-        ? [...discography.map((item) => discographyCard(item)), ...discography.map((item) => discographyCard(item, true))].join('')
-        : '<p class="w-screen text-center text-sm text-ink/45 py-16">no releases added yet.</p>';
-
-      const workGrid = document.getElementById('work-grid');
-      workGrid.innerHTML = works.length ? works.map((item, index) => `
-        <button type="button" class="work-item work-card p-0 text-left min-h-[190px] overflow-hidden group flex flex-col ${index === 0 ? 'md:row-span-2' : ''}" data-cat="${dynamicEscape(item.category)}" data-work-id="${item.id}">
-          ${item.image_url ? `<div class="h-40 overflow-hidden"><img src="${dynamicEscape(item.image_url)}" alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"></div>` : ''}
-          <div class="p-6 flex-1 flex flex-col justify-between gap-8">
-            <span class="text-xs tracking-widest2 lowercase text-fog">${dynamicEscape(item.category)}</span>
-            <div><h3 class="font-serif text-xl italic mb-1">${dynamicEscape(item.title)}</h3><p class="text-xs text-ink/60">${item.year} — view details</p></div>
-          </div>
-        </button>`).join('') : '<p class="sm:col-span-2 md:col-span-3 text-center text-sm text-ink/45 py-16">no selected works added yet.</p>';
-      workGrid.querySelectorAll('[data-work-id]').forEach((card) => {
-        card.addEventListener('click', () => openWorkModal(works.find((item) => String(item.id) === card.dataset.workId)));
+    const copyBtn = document.getElementById('copy-email');
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText('hello@raidencatra.com').then(() => {
+        const original = copyBtn.textContent;
+        copyBtn.textContent = 'copied to clipboard';
+        setTimeout(() => copyBtn.textContent = original, 1800);
       });
-      bindDynamicFilters();
+    });
 
-      const galleryGrid = document.querySelector('#gallery .masonry-col');
-      galleryGrid.innerHTML = gallery.length ? gallery.map((item) => `
-        <button type="button" class="masonry-item gallery-item group cursor-pointer relative overflow-hidden bg-sky-light border border-ink/5 w-full text-left" data-title="${dynamicEscape(item.title)}" data-date="${item.year}">
-          <img src="${dynamicEscape(item.image_url)}" alt="${dynamicEscape(item.title)}" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
-          <span class="absolute inset-0 bg-ink/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"><i class="fa-solid fa-expand text-sky-light text-2xl"></i></span>
-        </button>`).join('') : '<p class="text-center text-sm text-ink/45 py-16">no gallery images added yet.</p>';
-      galleryGrid.querySelectorAll('.gallery-item').forEach((item) => item.addEventListener('click', () => openLightbox(item)));
-    } catch (error) {
-      console.error(error);
-      // Skeleton diganti pesan error ringan supaya tidak terus "loading" jika API gagal
-      const fallbackMsg = 'content is temporarily unavailable.';
-      const track = document.getElementById('discography-track');
-      if (track) track.innerHTML = `<p class="w-screen text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
-      const workGrid = document.getElementById('work-grid');
-      if (workGrid) workGrid.innerHTML = `<p class="sm:col-span-2 md:col-span-3 text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
-      const galleryGrid = document.querySelector('#gallery .masonry-col');
-      if (galleryGrid) galleryGrid.innerHTML = `<p class="text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
+    // === DISCOGRAPHY ===
+    const discoTrack = document.getElementById('discography-track');
+    if (discoTrack) {
+      let currentX = 0;
+      let isPaused = false;
+      const speed = 1.2; 
+      function animateMarquee() {
+        if (!isPaused) {
+          currentX -= speed;
+          if (Math.abs(currentX) >= discoTrack.scrollWidth / 2) {
+            currentX = 0;
+          }
+          discoTrack.style.transform = `translate3d(${currentX}px, 0, 0)`;
+        }
+        requestAnimationFrame(animateMarquee);
+      }
+      requestAnimationFrame(animateMarquee);
+
+      const marqueeContainer = document.querySelector('.discography-marquee');
+      if (marqueeContainer) {
+        marqueeContainer.addEventListener('mouseenter', () => { isPaused = true; });
+        marqueeContainer.addEventListener('mouseleave', () => { isPaused = false; });
+      }
+
+      const modal = document.getElementById('discography-modal');
+      const modalImg = document.getElementById('discography-modal-img');
+      const modalTitle = document.getElementById('discography-modal-title');
+      const modalDesc = document.getElementById('discography-modal-desc');
+      const modalSpotify = document.getElementById('discography-modal-spotify');
+      const modalSoundcloud = document.getElementById('discography-modal-soundcloud');
+      function openDiscographyModal(item) {
+        const img = item.querySelector('img');
+        modalImg.src = img ? img.src : '';
+        modalImg.alt = img ? img.alt : '';
+        modalTitle.textContent = item.dataset.title || '';
+        modalDesc.textContent = item.dataset.desc || '';
+        modalSpotify.href = item.dataset.spotify || '#';
+        modalSoundcloud.href = item.dataset.soundcloud || '#';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        requestAnimationFrame(() => modal.classList.add('is-open'));
+      }
+      function closeDiscographyModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }, 350);
+      }
+      discoTrack.addEventListener('click', (e) => {
+        const item = e.target.closest('.discography-item');
+        if (item) openDiscographyModal(item);
+      });
+      modal.querySelectorAll('[data-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeDiscographyModal);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeDiscographyModal();
+      });
     }
-  }
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && workModal.classList.contains('is-open')) closeWorkModal();
-  });
-  hydrateContent();
-</script>
+    // === DATABASE CONTENT ===
+    const dynamicEscape = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[char]);
 
+    async function publicData(url) {
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error('Content is temporarily unavailable.');
+      return (await response.json()).data;
+    }
+
+    function discographyCard(item, duplicate = false) {
+      return `<button type="button" class="discography-item" ${duplicate ? 'aria-hidden="true" tabindex="-1"' : ''}
+        data-title="${dynamicEscape(item.title)}" data-desc="${dynamicEscape(`${item.type}   ${item.year}`)}"
+        data-spotify="${dynamicEscape(item.spotify_url)}" data-soundcloud="${dynamicEscape(item.soundcloud_url)}">
+        <div class="discography-frame w-56 h-56 md:w-72 md:h-72 border border-ink/10">
+          <img src="${dynamicEscape(item.image_url)}" alt="${duplicate ? '' : dynamicEscape(`${item.title} cover`)}" loading="lazy" class="w-full h-full object-cover">
+          <div class="discography-hover"><i class="fa-solid fa-expand text-sky-light text-xl"></i></div>
+        </div>
+        <p class="mt-3 text-xs tracking-widest2 lowercase text-ink/70 text-left">${dynamicEscape(item.title)}</p>
+      </button>`;
+    }
+
+    function bindDynamicFilters() {
+      document.querySelectorAll('.filter-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.filter;
+          document.querySelectorAll('#work-grid .work-item').forEach((item) => {
+            item.style.display = filter === 'all' || item.dataset.cat === filter ? '' : 'none';
+          });
+        });
+      });
+    }
+
+    const workModal = document.getElementById('work-modal');
+    function openWorkModal(item) {
+      const image = document.getElementById('work-modal-image');
+      const imageWrap = document.getElementById('work-modal-image-wrap');
+      document.getElementById('work-modal-title').textContent = item.title;
+      document.getElementById('work-modal-meta').textContent = `${item.category}   ${item.year}`;
+      document.getElementById('work-modal-description').innerHTML = item.description || '<p>No description added yet.</p>';
+      imageWrap.classList.toggle('hidden', !item.image_url);
+      if (!item.image_url) {
+        workModal.querySelector('.grid').classList.remove('md:grid-cols-2');
+      } else {
+        workModal.querySelector('.grid').classList.add('md:grid-cols-2');
+        image.src = item.image_url;
+        image.alt = item.title;
+      }
+      workModal.classList.remove('hidden');
+      workModal.classList.add('flex');
+      workModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => workModal.classList.add('is-open'));
+    }
+
+    function closeWorkModal() {
+      workModal.classList.remove('is-open');
+      workModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        workModal.classList.add('hidden');
+        workModal.classList.remove('flex');
+      }, 400);
+    }
+    workModal.querySelectorAll('[data-work-close]').forEach((element) => element.addEventListener('click', closeWorkModal));
+
+    async function hydrateContent() {
+      try {
+        const [discography, works, gallery, about, music] = await Promise.all([
+          publicData('/api/discography').catch(()=>[]),
+          publicData('/api/works?limit=6').catch(()=>[]),
+          publicData('/api/gallery?limit=6').catch(()=>[]),
+          publicData('/api/about').catch(()=>null),
+          publicData('/api/musics').catch(()=>null)
+        ]);
+
+        // Render Discography
+        const track = document.getElementById('discography-track');
+        track.style.transform = 'translate3d(0,0,0)';
+        if(discography && discography.length > 0) {
+           track.innerHTML = [...discography.map((item) => discographyCard(item)), ...discography.map((item) => discographyCard(item, true))].join('');
+        } else {
+           track.innerHTML = '<p class="w-screen text-center text-sm text-ink/45 py-16">no releases added yet.</p>';
+        }
+
+        // Render Works
+        const workGrid = document.getElementById('work-grid');
+        if(works && works.length > 0) {
+          workGrid.innerHTML = works.map((item, index) => `
+          <button type="button" class="work-item work-card p-0 text-left min-h-[190px] overflow-hidden group flex flex-col ${index === 0 ? 'md:row-span-2' : ''}" data-cat="${dynamicEscape(item.category)}" data-work-id="${item.id}">
+            ${item.image_url ? `<div class="h-40 overflow-hidden"><img src="${dynamicEscape(item.image_url)}" alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"></div>` : ''}
+            <div class="p-6 flex-1 flex flex-col justify-between gap-8">
+              <span class="text-xs tracking-widest2 lowercase text-fog">${dynamicEscape(item.category)}</span>
+              <div><h3 class="font-serif text-xl italic mb-1">${dynamicEscape(item.title)}</h3><p class="text-xs text-ink/60">${item.year}   view details</p></div>
+            </div>
+          </button>`).join('');
+          workGrid.querySelectorAll('[data-work-id]').forEach((card) => {
+            card.addEventListener('click', () => openWorkModal(works.find((item) => String(item.id) === card.dataset.workId)));
+          });
+          bindDynamicFilters();
+        } else {
+          workGrid.innerHTML = '<p class="sm:col-span-2 md:col-span-3 text-center text-sm text-ink/45 py-16">no selected works added yet.</p>';
+        }
+
+        // Render Gallery
+        const galleryGrid = document.querySelector('#gallery .masonry-col');
+        if (gallery && gallery.length > 0) {
+          galleryGrid.innerHTML = gallery.map((item) => `
+          <button type="button" class="masonry-item gallery-item group cursor-pointer relative overflow-hidden bg-sky-light border border-ink/5 w-full text-left" data-title="${dynamicEscape(item.title)}" data-date="${item.year}">
+            <img src="${dynamicEscape(item.image_url)}" alt="${dynamicEscape(item.title)}" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+            <span class="absolute inset-0 bg-ink/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center"><i class="fa-solid fa-expand text-sky-light text-2xl"></i></span>
+          </button>`).join('');
+          galleryGrid.querySelectorAll('.gallery-item').forEach((item) => item.addEventListener('click', () => openLightbox(item)));
+        } else {
+          galleryGrid.innerHTML = '<p class="text-center text-sm text-ink/45 py-16">no gallery images added yet.</p>';
+        }
+
+        // Render About
+        const aboutEl = document.getElementById('about-content');
+        if (about && about.content) {
+          aboutEl.className = "reveal about-description text-left md:text-center max-w-xl mx-auto";
+          aboutEl.innerHTML = about.content;
+        } else {
+          aboutEl.innerHTML = '<p class="text-sm text-ink/45">content is temporarily unavailable.</p>';
+        }
+
+        // Render Music Player
+        if (music && music.mp3_url) {
+          const player = document.getElementById('floating-player');
+          player.classList.remove('hidden');
+          document.getElementById('player-title').textContent = music.title;
+          document.getElementById('player-thumb').src = music.thumbnail_url || 'https://ik.imagekit.io/souhinasstes/ab67616d0000b2737d6ac8b4a84ad4b342050d87%20(1).webp';
+          
+          const audio = document.getElementById('player-audio');
+          audio.src = music.mp3_url;
+          const toggle = document.getElementById('player-toggle');
+          const thumb = document.getElementById('player-thumb');
+
+          const updatePlayerState = () => {
+            if (audio.paused) {
+              toggle.innerHTML = '<i class="fa-solid fa-play text-xs pl-0.5"></i>';
+              thumb.style.animationPlayState = 'paused';
+            } else {
+              toggle.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+              thumb.style.animationPlayState = 'running';
+            }
+          };
+
+          toggle.addEventListener('click', () => {
+            if (audio.paused) audio.play(); else audio.pause();
+            updatePlayerState();
+          });
+
+          // Autoplay request (akan di pause oleh browser jika user blm berinteraksi)
+          audio.play().then(() => {
+            updatePlayerState();
+          }).catch(() => {
+            console.log("Autoplay memerlukan interaksi pengguna terlebih dahulu.");
+            updatePlayerState();
+          });
+        }
+
+      } catch (error) {
+        console.error(error);
+        const fallbackMsg = 'content is temporarily unavailable.';
+        const track = document.getElementById('discography-track');
+        if (track) track.innerHTML = `<p class="w-screen text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
+        const workGrid = document.getElementById('work-grid');
+        if (workGrid) workGrid.innerHTML = `<p class="sm:col-span-2 md:col-span-3 text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
+        const galleryGrid = document.querySelector('#gallery .masonry-col');
+        if (galleryGrid) galleryGrid.innerHTML = `<p class="text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
+        document.getElementById('about-content').innerHTML = `<p class="text-center text-sm text-ink/45 py-16">${fallbackMsg}</p>`;
+      }
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && workModal.classList.contains('is-open')) closeWorkModal();
+    });
+
+    hydrateContent();
+  </script>
 </body>
 </html>

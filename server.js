@@ -277,6 +277,7 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ message: 'Berhasil keluar.' });
 });
 
+// ====== PUBLIC API ======
 app.get('/api/discography', async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, title, image_url, type, year, spotify_url, soundcloud_url FROM discographies ORDER BY year DESC, created_at DESC');
@@ -307,8 +308,26 @@ app.get('/api/gallery', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// PUBLIC MUSIC (Untuk Bubble Player)
+app.get('/api/musics', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query('SELECT title, thumbnail_url, mp3_url FROM musics ORDER BY created_at DESC LIMIT 1');
+    res.json({ data: rows[0] || null });
+  } catch (error) { next(error); }
+});
+
+// PUBLIC ABOUT SECTION
+app.get('/api/about', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query('SELECT content FROM about_section WHERE id = 1');
+    res.json({ data: rows[0] || null });
+  } catch (error) { next(error); }
+});
+
+// ====== ADMIN API ======
 app.use('/api/admin', requireAuth);
 
+// Admin Discography
 app.get('/api/admin/discography', async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT * FROM discographies ORDER BY created_at DESC');
@@ -359,6 +378,7 @@ app.delete('/api/admin/discography/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// Admin Works
 app.get('/api/admin/works', async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT * FROM selected_works ORDER BY created_at DESC');
@@ -408,6 +428,7 @@ app.delete('/api/admin/works/:id', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// Admin Gallery
 async function getAdminGalleries() {
   const { rows } = await pool.query(
     `SELECT g.id, g.title, g.year, g.created_at, g.updated_at,
@@ -481,6 +502,71 @@ app.delete('/api/admin/gallery/:id', async (req, res, next) => {
     if (!result.rowCount) return res.status(404).json({ message: 'Data tidak ditemukan.' });
     res.json({ message: 'Gallery berhasil dihapus.' });
   } catch (error) { next(error); }
+});
+
+// Admin Music Player
+app.get('/api/admin/musics', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM musics ORDER BY created_at DESC');
+    res.json({ data: rows });
+  } catch (error) { next(error); }
+});
+
+app.post('/api/admin/musics', async (req, res, next) => {
+  try {
+    const values = [
+      cleanText(req.body.title, 'Title'),
+      cleanUrl(req.body.thumbnail_url, 'Thumbnail URL', false),
+      cleanUrl(req.body.mp3_url, 'MP3 URL')
+    ];
+    const { rows } = await pool.query(
+      `INSERT INTO musics (title, thumbnail_url, mp3_url) VALUES ($1,$2,$3) RETURNING *`, values
+    );
+    res.status(201).json({ message: 'Music berhasil ditambahkan.', data: rows[0] });
+  } catch (error) { if (!error.code) return validationError(res, error); next(error); }
+});
+
+app.put('/api/admin/musics/:id', async (req, res, next) => {
+  const id = parseId(req, res); if (!id) return;
+  try {
+    const values = [
+      cleanText(req.body.title, 'Title'),
+      cleanUrl(req.body.thumbnail_url, 'Thumbnail URL', false),
+      cleanUrl(req.body.mp3_url, 'MP3 URL'), id
+    ];
+    const { rows } = await pool.query(
+      `UPDATE musics SET title=$1, thumbnail_url=$2, mp3_url=$3, updated_at=NOW() WHERE id=$4 RETURNING *`, values
+    );
+    if (!rows[0]) return res.status(404).json({ message: 'Data tidak ditemukan.' });
+    res.json({ message: 'Music berhasil diperbarui.', data: rows[0] });
+  } catch (error) { if (!error.code) return validationError(res, error); next(error); }
+});
+
+app.delete('/api/admin/musics/:id', async (req, res, next) => {
+  const id = parseId(req, res); if (!id) return;
+  try {
+    const result = await pool.query('DELETE FROM musics WHERE id=$1', [id]);
+    if (!result.rowCount) return res.status(404).json({ message: 'Data tidak ditemukan.' });
+    res.json({ message: 'Music berhasil dihapus.' });
+  } catch (error) { next(error); }
+});
+
+// Admin About Section
+app.get('/api/admin/about', async (req, res, next) => {
+  try {
+    const { rows } = await pool.query('SELECT content FROM about_section WHERE id = 1');
+    res.json({ data: rows[0] || { content: '' } });
+  } catch (error) { next(error); }
+});
+
+app.put('/api/admin/about', async (req, res, next) => {
+  try {
+    const content = cleanDescription(req.body.content);
+    const { rows } = await pool.query(
+      `UPDATE about_section SET content=$1, updated_at=NOW() WHERE id=1 RETURNING content`, [content]
+    );
+    res.json({ message: 'About section berhasil diperbarui.', data: rows[0] });
+  } catch (error) { if (!error.code) return validationError(res, error); next(error); }
 });
 
 app.use('/api', (req, res) => res.status(404).json({ message: 'Endpoint tidak ditemukan.' }));

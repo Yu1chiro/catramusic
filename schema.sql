@@ -52,9 +52,33 @@ CREATE TABLE IF NOT EXISTS gallery_images (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- FITUR BARU: MUSICS (Player Buble)
+CREATE TABLE IF NOT EXISTS musics (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(120) NOT NULL,
+  thumbnail_url TEXT,
+  mp3_url TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- FITUR BARU: ABOUT SECTION
+CREATE TABLE IF NOT EXISTS about_section (
+  id INT PRIMARY KEY DEFAULT 1,
+  content TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexing lama
 CREATE INDEX IF NOT EXISTS discographies_created_idx ON discographies (created_at DESC);
 CREATE INDEX IF NOT EXISTS selected_works_created_idx ON selected_works (created_at DESC);
 CREATE INDEX IF NOT EXISTS galleries_created_idx ON galleries (created_at DESC);
 CREATE INDEX IF NOT EXISTS gallery_images_gallery_idx ON gallery_images (gallery_id, position, id);
+CREATE INDEX IF NOT EXISTS musics_created_idx ON musics (created_at DESC);
+
+-- Default isi About Section agar tidak kosong saat awal instalasi
+INSERT INTO about_section (id, content) 
+VALUES (1, '<p>I''m a self-taught editor and producer from Indonesia, chasing the same feeling in every project: something quiet turning into something alive.</p><p>Porter Robinson''s <em>nurture</em> is the record that shaped how I think about craft   soft colors holding sharp precision, restraint that still feels warm. That balance is what I try to bring into every cut, every mix, every frame.</p>') 
+ON CONFLICT (id) DO NOTHING;
 
 COMMIT;
