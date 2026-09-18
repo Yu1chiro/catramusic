@@ -347,7 +347,6 @@
         </div>
       </div>
     </div>
-    <p class="reveal text-center text-xs text-ink/40 mt-10 px-6">klik gambar untuk lihat detail rilisan &amp; tautan streaming.</p>
   </section>
 
   <!-- SERVICES -->
@@ -534,7 +533,7 @@
     <button id="player-toggle" class="w-9 h-9 rounded-full bg-ink text-sky-light flex items-center justify-center hover:bg-grass-deep transition-colors mr-1 shadow">
       <i class="fa-solid fa-play text-xs pl-0.5"></i>
     </button>
-    <audio id="player-audio" loop></audio>
+    <audio id="player-audio"></audio>
   </div>
 
   <style>
@@ -906,6 +905,20 @@
           toggle.addEventListener('click', () => {
             if (audio.paused) audio.play(); else audio.pause();
             updatePlayerState();
+          });
+
+          // Looping manual biasa: cek posisi mendekati akhir lalu putar ulang dari awal
+          // tanpa menunggu audio benar-benar berhenti, supaya tidak ada jeda saat loop
+          audio.addEventListener('timeupdate', () => {
+            if (audio.duration && (audio.duration - audio.currentTime) < 0.15) {
+              audio.currentTime = 0;
+            }
+          });
+
+          // Fallback jika timeupdate tidak sempat menangkap posisi akhir
+          audio.addEventListener('ended', () => {
+            audio.currentTime = 0;
+            audio.play();
           });
 
           // Autoplay request (akan di pause oleh browser jika user blm berinteraksi)
