@@ -176,11 +176,11 @@ function cleanUrl(value, name, required = true) {
   }
 }
 
-function cleanWebpUrl(value) {
-  const href = cleanUrl(value, 'URL gambar WebP');
+function cleanPngUrl(value) {
+  const href = cleanUrl(value, 'URL gambar PNG');
   const url = new URL(href);
-  if (!url.pathname.toLowerCase().endsWith('.webp')) {
-    throw new Error('Setiap gambar gallery wajib berekstensi .webp.');
+  if (!url.pathname.toLowerCase().endsWith('.png')) {
+    throw new Error('Setiap gambar gallery wajib berekstensi .png.');
   }
   return href;
 }
@@ -448,9 +448,9 @@ function parseGallery(body) {
   const title = cleanText(body.title, 'Title');
   const year = cleanYear(body.year);
   if (!Array.isArray(body.images) || body.images.length < 1 || body.images.length > 30) {
-    throw new Error('Gallery memerlukan 1–30 URL gambar WebP.');
+    throw new Error('Gallery memerlukan 1–30 URL gambar PNG.');
   }
-  return { title, year, images: body.images.map(cleanWebpUrl) };
+  return { title, year, images: body.images.map(cleanPngUrl) };
 }
 
 app.post('/api/admin/gallery', async (req, res, next) => {
