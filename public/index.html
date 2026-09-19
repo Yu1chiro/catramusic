@@ -105,6 +105,11 @@
     min-height: 100vh;
     overflow: hidden;
 }
+    .hero-video-stack {
+      position: absolute;
+      inset: 0;
+      will-change: transform;
+    }
     .hero-bg-img {
     position: absolute;
     inset: 0;
@@ -112,7 +117,7 @@
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    /* durasi transisi opacity diatur dari JS (CROSSFADE) */
 }
     @media (min-width: 768px) {
       .hero-bg-img { object-position: center 35%; }
@@ -285,28 +290,13 @@
   <section id="top" class="relative h-[100svh] min-h-[640px] overflow-hidden flex flex-col">
     <div id="hero-fallback" class="absolute inset-0 bg-gradient-to-b from-sky-light via-sky-mid to-sky-deep"></div>
     <div class="hero-bg-wrap">
-    <video
-  id="hero-image"
-  class="hero-bg-img"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto"
-  oncanplay="
-    this.style.opacity = '1';
-    document.getElementById('hero-fallback').style.opacity = '0';
-  "
-  onerror="
-    console.error('Video hero gagal dimuat:', this.error);
-    this.style.display = 'none';
-  "
->
-  <source
-    src="https://ik.imagekit.io/catrafilms/Sequence%2002.mp4"
-    type="video/mp4"
-  >
-</video>
+    <div id="hero-video-stack" class="hero-video-stack">
+      <!-- Dua video identik ditumpuk & di-crossfade lewat JS (tanpa atribut loop) supaya seamless -->
+      <video id="hero-video-a" class="hero-bg-img" muted playsinline autoplay preload="auto"
+        src="https://ik.imagekit.io/catrafilms/Sequence%2002.mp4"></video>
+      <video id="hero-video-b" class="hero-bg-img" muted playsinline preload="auto"
+        src="https://ik.imagekit.io/catrafilms/Sequence%2002.mp4"></video>
+    </div>
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-sky-light/70 via-sky-light/25 to-grass-deep/40"></div>
     <div class="cloud w-72 h-40 top-24 left-10 opacity-50"></div>
@@ -593,8 +583,109 @@
 
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // === SEAMLESS HERO VIDEO LOOP (2 video + crossfade) ===
+    (function initSeamlessHeroLoop() {
+      const stack = document.getElementById('hero-video-stack');
+      const fallback = document.getElementById('hero-fallback');
+      const vids = [document.getElementById('hero-video-a'), document.getElementById('hero-video-b')];
+      if (!stack || vids.some(v => !v)) return;
+
+      const CROSSFADE = 0.5;                // detik; perbesar (0.8) jika ujung & awal video beda jauh
+      const LEAD = CROSSFADE + 0.25;        // mulai video berikutnya sedikit lebih awal (kompensasi latency play)
+      let active = 0;
+      let switching = false;
+      let revealed = false;
+
+      vids.forEach(v => {
+        v.loop = false;
+        v.muted = true;
+        v.style.transition = `opacity ${CROSSFADE}s linear`;
+      });
+
+      // Tampilkan video A begitu siap, sembunyikan gradient fallback
+      vids[0].addEventListener('canplay', () => {
+        if (revealed) return;
+        revealed = true;
+        vids[0].style.opacity = '1';
+        if (fallback) fallback.style.opacity = '0';
+      });
+
+      // Jika video gagal dimuat, sembunyikan dan biarkan gradient fallback tampil
+      vids[0].addEventListener('error', () => {
+        console.error('Video hero gagal dimuat:', vids[0].error);
+        stack.style.display = 'none';
+      });
+
+      function hardRestart(v) {
+        // Cadangan terakhir bila video pengganti belum siap: loop biasa
+        v.currentTime = 0;
+        v.play().catch(() => {});
+      }
+
+      function swap() {
+        if (switching) return;
+        const cur = vids[active];
+        const next = vids[1 - active];
+        switching = true;
+
+        next.currentTime = 0;
+        next.play().then(() => {
+          // Video berikutnya sudah benar-benar jalan -> fade in di atas video lama
+          next.style.zIndex = '2';
+          cur.style.zIndex = '1';
+          next.style.opacity = '1';
+
+          setTimeout(() => {
+            cur.pause();
+            cur.currentTime = 0;     // siapkan untuk giliran berikutnya
+            cur.style.opacity = '0';
+            active = 1 - active;
+            switching = false;
+          }, CROSSFADE * 1000 + 60);
+        }).catch(() => {
+          switching = false;
+          hardRestart(cur);
+        });
+      }
+
+      function check() {
+        if (switching || document.hidden) return;
+        const cur = vids[active];
+        const next = vids[1 - active];
+        if (!cur.duration || isNaN(cur.duration) || cur.paused) return;
+
+        const remaining = cur.duration - cur.currentTime;
+        if (remaining <= LEAD && next.readyState >= 3) swap();
+      }
+
+      function tick() {
+        check();
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      // Fallback bila video lama sampai habis sebelum swap sempat terjadi
+      vids.forEach((v, i) => {
+        v.addEventListener('ended', () => {
+          if (i === active && !switching) {
+            const next = vids[1 - active];
+            if (next.readyState >= 3) swap(); else hardRestart(v);
+          }
+        });
+        v.addEventListener('timeupdate', check);
+      });
+
+      // Saat tab kembali aktif, pastikan video tetap jalan
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !switching) {
+          const cur = vids[active];
+          if (cur.paused) cur.play().catch(() => {});
+        }
+      });
+    })();
+
     // === OPTIMAL SMOOTH PARALLAX HERO (LERP) ===
-    const heroImg = document.getElementById('hero-image');
+    const heroImg = document.getElementById('hero-video-stack');
     const heroSection = document.getElementById('top');
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let currentScrollY = 0;
