@@ -100,19 +100,20 @@
       inset: 0;
       overflow: hidden;
     }
+    .hero-section {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+}
     .hero-bg-img {
-      position: absolute;
-      top: -10%;
-      left: 0;
-      width: 100%;
-      height: 120%;
-      object-fit: cover;
-      object-position: center 40%;
-      opacity: 0;
-      transition: opacity .7s ease;
-      will-change: transform;
-      backface-visibility: hidden;
-    }
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
     @media (min-width: 768px) {
       .hero-bg-img { object-position: center 35%; }
     }
@@ -284,14 +285,28 @@
   <section id="top" class="relative h-[100svh] min-h-[640px] overflow-hidden flex flex-col">
     <div id="hero-fallback" class="absolute inset-0 bg-gradient-to-b from-sky-light via-sky-mid to-sky-deep"></div>
     <div class="hero-bg-wrap">
-      <img
-        id="hero-image"
-        src="https://ik.imagekit.io/souhinasstes/pexels-travelers_tw-1445512897-27370199_2.webp"
-        alt=""
-        class="hero-bg-img"
-        onload="this.style.opacity=1; document.getElementById('hero-fallback').style.opacity=0;"
-        onerror="this.style.display='none';"
-      />
+    <video
+  id="hero-image"
+  class="hero-bg-img"
+  autoplay
+  muted
+  loop
+  playsinline
+  preload="auto"
+  oncanplay="
+    this.style.opacity = '1';
+    document.getElementById('hero-fallback').style.opacity = '0';
+  "
+  onerror="
+    console.error('Video hero gagal dimuat:', this.error);
+    this.style.display = 'none';
+  "
+>
+  <source
+    src="https://ik.imagekit.io/catrafilms/Sequence%2002.mp4"
+    type="video/mp4"
+  >
+</video>
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-sky-light/70 via-sky-light/25 to-grass-deep/40"></div>
     <div class="cloud w-72 h-40 top-24 left-10 opacity-50"></div>
@@ -922,12 +937,7 @@
           });
 
           // Autoplay request (akan di pause oleh browser jika user blm berinteraksi)
-          audio.play().then(() => {
-            updatePlayerState();
-          }).catch(() => {
-            console.log("Autoplay memerlukan interaksi pengguna terlebih dahulu.");
-            updatePlayerState();
-          });
+         
         }
 
       } catch (error) {
